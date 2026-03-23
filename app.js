@@ -1,4 +1,12 @@
-const API_KEY = "AIzaSyCbSUSIyazgXBWxLvD-XHi0JrICP9TmIfY";
+let API_KEY = localStorage.getItem("englishTutorApiKey");
+if (!API_KEY) {
+    API_KEY = prompt("⚠️ 保护机制触发：检测到公开环境，API Key不能硬编码！\n\n请输入你新申请的 Gemini API Key（它只会安全地保存在你本人的浏览器本地缓存中）：");
+    if (API_KEY) {
+        API_KEY = API_KEY.trim();
+        localStorage.setItem("englishTutorApiKey", API_KEY);
+    }
+}
+
 const chatInput = document.getElementById("chat-input");
 const sendBtn = document.getElementById("send-btn");
 const messagesArea = document.getElementById("messages-area");
@@ -189,7 +197,14 @@ async function handleSend() {
         
     } catch (error) {
         removeLoadingIndicator(loadingId);
-        addMessage(`API Error: ${error.message}`, "ai");
+        
+        if (error.message.includes("API key not valid") || error.message.includes("leaked") || error.message.includes("API_KEY_INVALID")) {
+            localStorage.removeItem("englishTutorApiKey");
+            addMessage(`API Error: 你的 API Key 已经失效或被封禁。已自动清除缓存，请刷新网页重新输入新的 Key！`, "ai");
+        } else {
+            addMessage(`API Error: ${error.message}`, "ai");
+        }
+        
         console.error(error);
         chatHistory.pop();
         saveHistory();
