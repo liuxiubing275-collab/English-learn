@@ -215,7 +215,8 @@ async function handleSend() {
 }
 
 async function getGeminiResponse() {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+    // 恢复为 1.5-flash，因为新申请的普通账号只对公开的标准 1.5 模型授权
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
     
     const payload = {
         contents: chatHistory,
