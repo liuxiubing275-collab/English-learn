@@ -73,6 +73,11 @@ if (window.SpeechRecognition) {
 
     recognition.onerror = function(event) {
         console.error("Speech error:", event.error);
+        if (event.error === 'not-allowed') {
+            alert("无法访问麦克风😢 请确保：\n1. 你的浏览器允许了本网页的麦克风权限。\n2. 你不是在微信/QQ等内置浏览器打开的（请复制链接到 Safari或系统自带浏览器 中打开）。");
+        } else if (event.error !== 'no-speech') {
+            alert("麦克风发生错误: " + event.error);
+        }
         stopRecording();
     };
 
