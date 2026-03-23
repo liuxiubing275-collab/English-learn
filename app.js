@@ -215,8 +215,8 @@ async function handleSend() {
 }
 
 async function getGeminiResponse() {
-    // 恢复为 1.5-flash，因为新申请的普通账号只对公开的标准 1.5 模型授权
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    // 已经锁定当前用户账号属于全新时代，基础免费模型已迭代为 2.0-flash
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
     
     const payload = {
         contents: chatHistory,
