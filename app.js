@@ -3,6 +3,7 @@ const chatInput = document.getElementById("chat-input");
 const sendBtn = document.getElementById("send-btn");
 const messagesArea = document.getElementById("messages-area");
 const clearBtn = document.getElementById("clear-btn");
+const voiceBtn = document.getElementById("voice-btn");
 
 const DEFAULT_HISTORY = [
     {
@@ -42,6 +43,69 @@ window.onload = () => {
     renderHistory();
     chatInput.focus();
 };
+
+// -- Speech Recognition (STT) Setup --
+window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let recognition = null;
+let isRecording = false;
+
+if (window.SpeechRecognition) {
+    recognition = new window.SpeechRecognition();
+    recognition.lang = 'en-US'; // Set to English for pronunciation practice
+    recognition.continuous = false;
+    recognition.interimResults = true;
+
+    recognition.onstart = function() {
+        isRecording = true;
+        voiceBtn.classList.add("recording");
+        chatInput.placeholder = "Listening (speak clearly)...";
+    };
+
+    recognition.onresult = function(event) {
+        let transcript = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+        }
+        chatInput.value = transcript;
+        chatInput.style.height = "auto";
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + "px";
+    };
+
+    recognition.onerror = function(event) {
+        console.error("Speech error:", event.error);
+        stopRecording();
+    };
+
+    recognition.onend = function() {
+        stopRecording();
+    };
+} else {
+    if(voiceBtn) voiceBtn.style.opacity = "0.5";
+}
+
+function stopRecording() {
+    if (isRecording) {
+        isRecording = false;
+        if(recognition) recognition.stop();
+        voiceBtn.classList.remove("recording");
+        chatInput.placeholder = "Type your English message..."; // Reset to normal
+    }
+}
+
+// Click to toggle recording
+if (voiceBtn) {
+    voiceBtn.addEventListener("click", () => {
+        if (!recognition) return alert("Your browser does not support native voice recognition. Please use Edge or Chrome.");
+        if (isRecording) {
+            stopRecording();
+        } else {
+            // Stop AI currently speaking
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            chatInput.value = "";
+            try { recognition.start(); } catch(e) {}
+        }
+    });
+}
 
 function renderHistory() {
     messagesArea.innerHTML = "";
