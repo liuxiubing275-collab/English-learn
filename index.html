@@ -1,62 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
+    <!-- 适配 iPhone 屏幕 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- PWA & iOS Native App Config -->
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Tutor AI">
-    <link rel="apple-touch-icon" href="icon.png">
-    <link rel="manifest" href="manifest.json">
-    <title>English Dialogue Tutor</title>
-    <!-- Modern typography -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <title>AI 英语私教</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f9; color: #333; }
+        h1 { text-align: center; color: #2c3e50; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button { background-color: #007aff; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 16px; width: 100%; margin-top: 10px; cursor: pointer; }
+        button:active { background-color: #005bb5; }
+        textarea, input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; box-sizing: border-box; font-size: 16px; }
+        #result { margin-top: 10px; color: #d35400; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <div class="app-background">
-        <!-- Animated background circles for premium feel -->
-        <div class="circles">
-            <div class="circle circle-1"></div>
-            <div class="circle circle-2"></div>
-            <div class="circle circle-3"></div>
-        </div>
-        
-        <main class="chat-container glass-panel">
-            <header class="chat-header">
-                <div class="tutor-info">
-                    <div class="tutor-avatar">🤖</div>
-                    <div class="tutor-details">
-                        <h1 class="tutor-name">Tutor AI</h1>
-                        <p class="tutor-status"><span class="status-dot"></span>Online</p>
-                    </div>
-                </div>
-                <button class="clear-btn" id="clear-btn" title="Clear Chat History">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                </button>
-            </header>
-            
-            <section class="messages-area" id="messages-area">
-                <!-- Messages injected here via JS -->
-            </section>
-            
-            <footer class="input-area">
-                <div class="input-wrapper">
-                    <button class="icon-btn" id="voice-btn" title="Click to Speak English">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>
-                    </button>
-                    <textarea id="chat-input" placeholder="Type your English message..." rows="1"></textarea>
-                    <button class="icon-btn primary-btn" id="send-btn" title="Send">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                    </button>
-                </div>
-            </footer>
-        </main>
+
+    <h1>🚀 AI 英语私教</h1>
+
+    <!-- 功能区 1：文章朗读 -->
+    <div class="card">
+        <h2>📖 文章朗读</h2>
+        <p>输入英文，iPhone 会用纯正口音读出来：</p>
+        <textarea id="articleText" rows="4">Hello! I am your English teacher. Let's practice English together.</textarea>
+        <button onclick="speakText()">🔊 朗读文章</button>
     </div>
-    
-    <script src="app.js"></script>
+
+    <!-- 功能区 2：单词跟读 -->
+    <div class="card">
+        <h2>🗣️ 单词跟读练习</h2>
+        <p>目标单词：<strong style="font-size: 24px; color: #27ae60;" id="targetWord">Apple</strong></p>
+        <button onclick="readTargetWord()" style="background-color: #27ae60;">🔊 听标准发音</button>
+        <button onclick="startListeningForWord()" style="background-color: #e67e22;">🎤 按住跟读</button>
+        <p id="wordResult"></p>
+    </div>
+
+    <!-- 功能区 3：AI 英语对话 (模拟演示) -->
+    <div class="card">
+        <h2>🤖 英语自由对话</h2>
+        <p>输入你的 Gemini API Key (仅保存在本地浏览器中):</p>
+        <input type="password" id="apiKey" placeholder="输入 API Key...">
+        <button onclick="startConversation()" style="background-color: #8e44ad;">🎤 点击说话</button>
+        <p id="chatLog">聊天记录将显示在这里...</p>
+    </div>
+
+    <script>
+        // --- 1. 文章朗读功能 ---
+        function speakText(textOverride) {
+            const text = textOverride || document.getElementById('articleText').value;
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US'; // 设置为美式英语
+            utterance.rate = 0.9;     // 语速稍微放慢一点，适合学习
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // --- 2. 单词跟读功能 ---
+        function readTargetWord() {
+            const word = document.getElementById('targetWord').innerText;
+            speakText(word);
+        }
+
+        function startListeningForWord() {
+            // 兼容 Safari 的语音识别 API
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("你的浏览器不支持语音识别，请使用 iPhone 自带的 Safari 浏览器。");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            document.getElementById('wordResult').innerText = "正在聆听... 请说出单词";
+            
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript.toLowerCase().replace(/[.,]/g, '');
+                const target = document.getElementById('targetWord').innerText.toLowerCase();
+                
+                if (transcript === target) {
+                    document.getElementById('wordResult').innerHTML = `✅ 完美！你读作: "${transcript}"`;
+                } else {
+                    document.getElementById('wordResult').innerHTML = `❌ 差一点。你读作: "${transcript}"，再试一次！`;
+                }
+            };
+
+            recognition.onerror = function(event) {
+                document.getElementById('wordResult').innerText = "识别出错，请允许麦克风权限。";
+            };
+        }
+
+        // --- 3. 英语对话功能 (框架) ---
+        function startConversation() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                alert("请先获取并输入 Gemini API Key！");
+                return;
+            }
+            // 这里可以结合语音识别(获取你的话) -> 发送给Gemini(获取AI回复) -> 语音合成(读出AI的话)
+            // 稍后我们可以完善这部分网络请求的代码！
+            alert("语音对话框架已就绪！下一步我们可以接入真实的 AI 请求。");
+        }
+    </script>
+</body>
+</html>
 </body>
 </html>
