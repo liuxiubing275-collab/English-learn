@@ -182,7 +182,7 @@ function transferStoryToArticle() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
         
-        function switchTab(tabName) {
+        window.switchTab =function (tabName) {
             document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById('page-' + tabName).classList.add('active');
