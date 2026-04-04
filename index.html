@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <title>AI 英语私教</title>
-
-  <!-- PWA -->
-  <link rel="manifest" href="./pwa/manifest.json">
-  <meta name="theme-color" content="#007aff">
-
-  <!-- iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="AI 英语私教">
-  <link rel="apple-touch-icon" href="./assets/icon-192.png">
-
-  <!-- 样式 -->
-  <link rel="stylesheet" href="./css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA & iOS Native App Config -->    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="英语私教">
+    <!-- 关联 PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <title>AI 英语私教</title>
+    <!-- 引入外部 CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
     <h1>🚀 AI 英语私教</h1>
@@ -34,65 +30,59 @@
         <div class="card" style="border: 2px solid #3498db;">
             <h2>🗣️ 单词发音与跟读 <span id="wordCounter" style="font-size: 14px; color: #8e8e93; font-weight: normal;">1/1</span></h2>
 
-    <!-- 1. 每日科学学习看板 -->
-    <div id="dailyTaskDashboard" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%); color: white; padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(37, 117, 252, 0.3);">
-        <h3 style="margin: 0 0 10px 0; font-size: 16px; display: flex; justify-content: space-between;">
-            📅 今日学习计划 <span id="todayDate" style="font-size: 12px; opacity: 0.8;"></span>
-        </h3>
-        <div id="taskList" style="font-size: 14px; line-height: 1.8;">
-            <!-- 动态生成任务 -->
-            正在计算进度...
-        </div>
-        <button onclick="markCurrentGroupFinished()" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; padding: 8px 12px; border-radius: 20px; font-size: 12px; margin-top: 10px; cursor: pointer; width: 100%; font-weight: bold;">
-            ✅ 标记当前组（第 <span id="currentActiveGNum">-</span> 组）为今日已完成
-        </button>
-    </div>
+            <!-- 每日科学学习看板 -->
+            <div id="dailyTaskDashboard" class="dashboard">
+                <h3 style="margin: 0 0 10px 0; font-size: 16px; display: flex; justify-content: space-between;">
+                    📅 今日学习计划 <span id="todayDate" style="font-size: 12px; opacity: 0.8;"></span>
+                </h3>
+                <div id="taskList" style="font-size: 14px; line-height: 1.8;">正在计算进度...</div>
+                <button onclick="markCurrentGroupFinished()" class="finish-btn">
+                    ✅ 标记当前组（第 <span id="currentActiveGNum">-</span> 组）为今日已完成
+                </button>
+            </div>
 
             <select id="groupSelect" onchange="changeGroup()" style="font-weight: bold; color: #2980b9; border: 2px solid #3498db;"><option value="all">📚 整体练习 (加载中...)</option></select>
 
-        <!-- 【关键：把 1247 代码移动到这里！】 -->
-        <!-- 确保这段代码在 id="page-words" 的 div 内部 -->
-        <div style="background-color: #f8f9fa; border: 1px dashed #3498db; padding: 12px; border-radius: 10px; margin-top: 10px;">
-            <p style="margin: 0 0 8px 0; font-size: 14px; color: #2c3e50; font-weight: bold;">📅 1247 科学复习法</p>
-            <div style="display: flex; gap: 8px; align-items: center;">
-                <span style="font-size: 13px;">今天学第</span>
-                <input type="number" id="currentGroupInput" placeholder="组号" style="width: 60px; padding: 5px; margin: 0; text-align: center; border: 1px solid #3498db;">
-                <span style="font-size: 13px;">组</span>
-                <button onclick="calculateReviewGroups()" style="background: #3498db; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 13px;">生成复习计划</button>
+            <div class="review-box">
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #2c3e50; font-weight: bold;">📅 1247 科学复习法</p>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <span style="font-size: 13px;">今天学第</span>
+                    <input type="number" id="currentGroupInput" placeholder="组号" style="width: 60px; padding: 5px; margin: 0; text-align: center; border: 1px solid #3498db;">
+                    <span style="font-size: 13px;">组</span>
+                    <button onclick="calculateReviewGroups()" class="generate-btn">生成复习计划</button>
+                </div>
+                <div id="reviewResultArea" style="margin-top: 10px; font-size: 13px; color: #7f8c8d; display: none;">
+                    <div id="aiStoryArea" style="margin-top: 15px; display: none; border-top: 1px solid #eee; padding-top: 10px;">
+                        <button onclick="generateRevisionStory()" id="btnGenStory" class="story-btn">
+                            🪄 用复习词汇生成 AI 励志短文
+                        </button>
+                        <div id="aiStoryContent" class="story-content"></div>
+                        <button id="btnShadowStory" onclick="transferStoryToArticle()" class="sync-btn">📖 同步到“文章跟读”精练</button>
+                    </div>
+                    需复习：<span id="reviewLinks"></span>
+                </div>
             </div>
-            <div id="reviewResultArea" style="margin-top: 10px; font-size: 13px; color: #7f8c8d; display: none;">
 
-    <div id="aiStoryArea" style="margin-top: 15px; display: none; border-top: 1px solid #eee; padding-top: 10px;">
-        <button onclick="generateRevisionStory()" id="btnGenStory" style="background-color: #8e44ad; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold;">
-            🪄 用复习词汇生成 AI 励志短文
-        </button>
-        <div id="aiStoryContent" style="margin-top: 10px; font-size: 14px; line-height: 1.6; background: #fdf6ff; padding: 10px; border-radius: 8px; border: 1px solid #dcd0ff; display: none;">
-            <!-- AI 生成的内容将显示在这里 -->
-        </div>
-        <button id="btnShadowStory" onclick="transferStoryToArticle()" style="display: none; background-color: #27ae60; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 10px;">
-            📖 同步到“文章跟读”精练
-        </button>
-    </div>
-
-                需复习：<span id="reviewLinks"></span>
+            <!-- 单词主体 -->
+            <div style="text-align: center; width: 100%; margin-top: 20px;">
+                <strong style="font-size: 42px; color: #27ae60; display: block; margin-bottom: 5px;" id="targetWord" onclick="toggleBlur()">加载中...</strong>
+                <p id="chineseMeaning" style="text-align: center; font-size: 20px; color: #8e44ad; font-weight: bold; display: none; margin: 10px 0;">中文释义</p>
             </div>
-        </div>
-
-        <!-- 单词显示的单词主体 -->
- 
-        <div style="text-align: center; width: 100%; margin-top: 20px;">
-            <strong style="font-size: 42px; color: #27ae60; display: block; margin-bottom: 5px;" id="targetWord" onclick="toggleBlur()">
-                加载中...
-            </strong>
-            <p id="chineseMeaning" style="text-align: center; font-size: 20px; color: #8e44ad; font-weight: bold; display: none; margin: 10px 0;">
-                中文释义
-            </p>
-        </div>
             <div id="exampleSentence" class="example-box"></div>
-            <div class="row-buttons"><button class="action-btn" onclick="readTargetWord()" style="background-color: #27ae60;">🔊 听标准音</button><button class="action-btn" onclick="startListeningForWord()" style="background-color: #e67e22;">🎤 按住跟读</button></div>
-            <div class="row-buttons"><button class="action-btn" onclick="toggleMeaning()" style="background-color: #9b59b6;">👀 看中文</button><button class="action-btn" onclick="showAndPlayExample()" style="background-color: #f39c12;">📖 看/读例句</button></div>
+            
+            <div class="row-buttons">
+                <button class="action-btn" onclick="readTargetWord()" style="background-color: #27ae60;">🔊 听标准音</button>
+                <button class="action-btn" onclick="startListeningForWord()" style="background-color: #e67e22;">🎤 按住跟读</button>
+            </div>
+            <div class="row-buttons">
+                <button class="action-btn" onclick="toggleMeaning()" style="background-color: #9b59b6;">👀 看中文</button>
+                <button class="action-btn" onclick="showAndPlayExample()" style="background-color: #f39c12;">📖 看/读例句</button>
+            </div>
             <p id="wordResult" class="result-text"></p>
-            <div class="row-buttons"><button class="action-btn" onclick="restartWords()" style="background-color: #7f8c8d;">🔄 从头开始</button><button class="action-btn" onclick="nextWord()" style="background-color: #34495e;">⏭️ 下一个单词</button></div>
+            <div class="row-buttons">
+                <button class="action-btn" onclick="restartWords()" style="background-color: #7f8c8d;">🔄 从头开始</button>
+                <button class="action-btn" onclick="nextWord()" style="background-color: #34495e;">⏭️ 下一个单词</button>
+            </div>
         </div>
 
         <div class="card">
@@ -107,7 +97,7 @@
             <div id="dictationGroupMode" style="display: none;">
                 <div class="test-progress" id="groupTestProgress">正在测验: 1 / 10</div>
                 <button class="action-btn" onclick="playTestWord()" style="background-color: #8e44ad; margin-top: 0;">🔊 重听当前单词</button>
-                <input type="text" id="groupTestInput" placeholder="输入拼写后按【回车】自动进入下一个..." autocomplete="off" autocorrect="off" autocapitalize="none" onkeypress="if(event.key === 'Enter') submitTestWord()" style="border: 2px solid #3498db; font-size: 18px;">
+                <input type="text" id="groupTestInput" placeholder="输入拼写按【回车】下一个..." autocomplete="off" autocorrect="off" autocapitalize="none" onkeypress="if(event.key === 'Enter') submitTestWord()" style="border: 2px solid #3498db; font-size: 18px;">
                 <button class="action-btn" onclick="submitTestWord()" style="background-color: #27ae60;">⏭️ 提交并听下一个</button>
                 <button class="action-btn" onclick="quitGroupTest()" style="background-color: #e74c3c; margin-top: 20px;">🚪 提前结束测验</button>
             </div>
@@ -119,9 +109,9 @@
         </div>
     </div>
 
-
     <!-- ================= 页面 2：文章跟读 ================= -->
     <div id="page-articles" class="page-section">
+        <!-- 此处 HTML 结构不变，与原代码完全一致，略省部分重复以聚焦 -->
         <div class="card">
             <h2>📖 智能文章跟读</h2>
             <div style="background: #eaf2f8; padding: 10px; border-radius: 8px; margin-bottom: 10px;">
@@ -155,7 +145,7 @@
         </div>
     </div>
 
-    <!-- ================= 页面 3：互动聊天 (核心升级：双模式切换) ================= -->
+    <!-- ================= 页面 3：互动聊天 ================= -->
     <div id="page-chat" class="page-section">
         <div style="text-align: right; margin-bottom: -10px; padding-right: 5px;">
             <button onclick="toggleSettings()" style="background: transparent; border: none; font-size: 16px; color: #3498db; cursor: pointer; font-weight: bold;">⚙️ 展开/收起设置</button>
@@ -168,16 +158,13 @@
             <p id="apiKeyStatus" style="font-size: 12px; color: #7f8c8d; text-align: center; margin-top: 10px;">API Key 仅保存在你的手机本地，非常安全。</p>
         </div>
 
-        <!-- 新增：中英模式切换器 -->
         <div class="mode-switch">
             <button id="modeBtnEng" class="mode-btn active" onclick="switchChatMode('eng')">🇬🇧 英语私教模式</button>
             <button id="modeBtnChn" class="mode-btn" onclick="switchChatMode('chn')">🇨🇳 中文助手模式</button>
         </div>
 
         <div class="chat-container">
-            <div id="chatLog" class="chat-box">
-                <!-- 这里的开场白会根据模式自动动态生成 -->
-            </div>
+            <div id="chatLog" class="chat-box"></div>
             <div class="chat-input-area">
                 <button class="btn-mic" onclick="startChatVoice()">🎤</button>
                 <input type="text" id="chatMsgInput" placeholder="输入英语与 AI 对话..." autocomplete="off" onkeypress="if(event.key === 'Enter') sendChatMessage()">
@@ -186,6 +173,16 @@
         </div>
     </div>
 
-    <script src="./js/app.js"></script>
-
+    <!-- 引入外部 JS，注册 Service Worker -->
+    <script src="js/app.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('SW 注册成功: ', registration.scope))
+                    .catch(err => console.log('SW 注册失败: ', err));
+            });
+        }
+    </script>
+</body>
 </html>
