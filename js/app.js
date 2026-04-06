@@ -576,6 +576,101 @@ function quitArticleDictation() {
     document.getElementById('articleDisplay').style.filter = 'none';
 }
 
+// ================= 9. AI 聊天功能 =================
+
+function switchChatMode(mode) {
+    currentChatMode = mode;
+    document.getElementById('modeBtnEng').classList.toggle('active', mode === 'eng');
+    document.getElementById('modeBtnChn').classList.toggle('active', mode === 'chn');
+    chatHistory = [{ role: "system", content: mode === 'eng' ? promptEng : promptChn }];
+    const chatLog = document.getElementById('chatLog'); chatLog.innerHTML = '';
+    appendChatBubble(mode === 'eng' ? "Hi! I'm your AI English coach." : "你好！我是你的中文助手。", 'ai');
+}
+
+async function sendChatMessage(overrideText = null) {
+    const inputEl = document.getElementById('chatMsgInput');
+    const userText = overrideText || inputEl.value.trim();
+    if (!userText) return;
+    const apiKey = localStorage.getItem('silicon_api_key');
+    if (!apiKey) { alert("请配置 API Key"); return; }
+
+    appendChatBubble(userText, 'user');
+    inputEl.value = ''; chatHistory.push({ role: "user", content: userText });
+    const loadingId = appendChatBubble("⏳ Thinking...", 'ai');
+
+    try {
+        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: chatHistory })
+        });
+        const data = await response.json();
+        const aiRawText = data.choices[0].message.content;
+        chatHistory.push({ role: "assistant", content: aiRawText });
+        renderAndSpeakAiResponse(aiRawText, loadingId);
+    } catch (e) { updateChatBubble(loadingId, "Error."); }
+}
+
+function renderAndSpeakAiResponse(rawText, bubbleId) {
+    let correctionText = ""; let replyText = rawText;
+    if (currentChatMode === 'eng') {
+        const match = rawText.match(/<纠错>([\s\S]*?)<\/纠错>/);
+        if (match) { correctionText = match[1]; replyText = rawText.replace(/<纠错>[\s\S]*?<\/纠错>/, ''); }
+    }
+    const safeText = encodeURIComponent(replyText.replace(/[\u4e00-\u9fa5]/g, ''));
+    let html = correctionText ? `<div class="chat-correction">${correctionText}</div>` : "";
+    html += `<div class="chat-reply">${replyText} <button class="btn-play-reply" data-text="${safeText}" onclick="playAiSpeech(this)">🔊</button></div>`;
+    updateChatBubble(bubbleId, html);
+    window.playAiSpeech({ getAttribute: () => safeText });
+}
+
+function startChatVoice() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return alert("不支持语音。");
+    const rec = new SR(); rec.lang = currentChatMode === 'eng' ? 'en-US' : 'zh-CN';
+    rec.start();
+    rec.onresult = (e) => { sendChatMessage(e.results[0][0].transcript); };
+}
+
+function saveApiKey() {
+    const key = document.getElementById('siliconApiKey').value.trim();
+    if (key.startsWith("sk-")) {
+        localStorage.setItem('silicon_api_key', key);
+        document.getElementById('apiKeyStatus').innerText = "✅ 已保存";
+        setTimeout(() => { toggleSettings(); }, 600);
+    }
+}
+
+function playAiSpeech(btn) {
+    const text = decodeURIComponent(typeof btn === 'string' ? btn : btn.getAttribute('data-text'));
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = currentChatMode === 'eng' ? 'en-US' : 'zh-CN';
+    window.speechSynthesis.speak(utt);
+}
+
+function appendChatBubble(text, sender) {
+    const chatLog = document.getElementById('chatLog'); const id = "msg-" + Date.now();
+    const div = document.createElement('div'); div.className = `chat-bubble bubble-${sender}`; div.id = id; div.innerHTML = text; 
+    chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight; return id;
+}
+
+function updateChatBubble(id, html) {
+    const div = document.getElementById(id); if (div) div.innerHTML = html;
+}
+
+function switchTab(tab) {
+    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + tab).classList.add('active');
+    document.getElementById('btn-' + tab).classList.add('active');
+}
+
+function toggleSettings() {
+    const s = document.getElementById('settingsCard');
+    s.style.display = s.style.display === 'none' ? 'block' : 'none';
+}
+
 // ================= 10 词智能成文逻辑 =================
 
 async function generateGroupStory() {
@@ -687,99 +782,4 @@ function transferGroupStoryToArticle() {
     
     // 提示用户
     window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-// ================= 9. AI 聊天功能 =================
-
-function switchChatMode(mode) {
-    currentChatMode = mode;
-    document.getElementById('modeBtnEng').classList.toggle('active', mode === 'eng');
-    document.getElementById('modeBtnChn').classList.toggle('active', mode === 'chn');
-    chatHistory = [{ role: "system", content: mode === 'eng' ? promptEng : promptChn }];
-    const chatLog = document.getElementById('chatLog'); chatLog.innerHTML = '';
-    appendChatBubble(mode === 'eng' ? "Hi! I'm your AI English coach." : "你好！我是你的中文助手。", 'ai');
-}
-
-async function sendChatMessage(overrideText = null) {
-    const inputEl = document.getElementById('chatMsgInput');
-    const userText = overrideText || inputEl.value.trim();
-    if (!userText) return;
-    const apiKey = localStorage.getItem('silicon_api_key');
-    if (!apiKey) { alert("请配置 API Key"); return; }
-
-    appendChatBubble(userText, 'user');
-    inputEl.value = ''; chatHistory.push({ role: "user", content: userText });
-    const loadingId = appendChatBubble("⏳ Thinking...", 'ai');
-
-    try {
-        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: chatHistory })
-        });
-        const data = await response.json();
-        const aiRawText = data.choices[0].message.content;
-        chatHistory.push({ role: "assistant", content: aiRawText });
-        renderAndSpeakAiResponse(aiRawText, loadingId);
-    } catch (e) { updateChatBubble(loadingId, "Error."); }
-}
-
-function renderAndSpeakAiResponse(rawText, bubbleId) {
-    let correctionText = ""; let replyText = rawText;
-    if (currentChatMode === 'eng') {
-        const match = rawText.match(/<纠错>([\s\S]*?)<\/纠错>/);
-        if (match) { correctionText = match[1]; replyText = rawText.replace(/<纠错>[\s\S]*?<\/纠错>/, ''); }
-    }
-    const safeText = encodeURIComponent(replyText.replace(/[\u4e00-\u9fa5]/g, ''));
-    let html = correctionText ? `<div class="chat-correction">${correctionText}</div>` : "";
-    html += `<div class="chat-reply">${replyText} <button class="btn-play-reply" data-text="${safeText}" onclick="playAiSpeech(this)">🔊</button></div>`;
-    updateChatBubble(bubbleId, html);
-    window.playAiSpeech({ getAttribute: () => safeText });
-}
-
-function startChatVoice() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return alert("不支持语音。");
-    const rec = new SR(); rec.lang = currentChatMode === 'eng' ? 'en-US' : 'zh-CN';
-    rec.start();
-    rec.onresult = (e) => { sendChatMessage(e.results[0][0].transcript); };
-}
-
-function saveApiKey() {
-    const key = document.getElementById('siliconApiKey').value.trim();
-    if (key.startsWith("sk-")) {
-        localStorage.setItem('silicon_api_key', key);
-        document.getElementById('apiKeyStatus').innerText = "✅ 已保存";
-        setTimeout(() => { toggleSettings(); }, 600);
-    }
-}
-
-function playAiSpeech(btn) {
-    const text = decodeURIComponent(typeof btn === 'string' ? btn : btn.getAttribute('data-text'));
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = currentChatMode === 'eng' ? 'en-US' : 'zh-CN';
-    window.speechSynthesis.speak(utt);
-}
-
-function appendChatBubble(text, sender) {
-    const chatLog = document.getElementById('chatLog'); const id = "msg-" + Date.now();
-    const div = document.createElement('div'); div.className = `chat-bubble bubble-${sender}`; div.id = id; div.innerHTML = text; 
-    chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight; return id;
-}
-
-function updateChatBubble(id, html) {
-    const div = document.getElementById(id); if (div) div.innerHTML = html;
-}
-
-function switchTab(tab) {
-    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('page-' + tab).classList.add('active');
-    document.getElementById('btn-' + tab).classList.add('active');
-}
-
-function toggleSettings() {
-    const s = document.getElementById('settingsCard');
-    s.style.display = s.style.display === 'none' ? 'block' : 'none';
 }
