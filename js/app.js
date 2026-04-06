@@ -100,86 +100,78 @@ function markCurrentGroupFinished() {
     
     const currentGNum = parseInt(val) + 1;
     const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
+    // 归一化时间：设为今天的凌晨 0 点，避免时分秒干扰
+    now.setHours(0, 0, 0, 0);
 
-    // 读取历史记录
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
     
-    // 逻辑：从第 1 组遍历到当前组
     for (let i = 1; i <= currentGNum; i++) {
-        // 如果该组还没有记录，则进行“智能补全”
-        if (!history[i]) {
-            let fakeDate = new Date();
-            
-            // 为了让看板立即出现 1、4、6 组的复习任务：
-            // 第 N-1 组设定为 1 天前完成 (diffDays = 1)
-            if (i === currentGNum - 1) {
-                fakeDate.setDate(now.getDate() - 1);
-            } 
-            // 第 N-3 组设定为 3 天前完成 (diffDays = 3)
-            else if (i === currentGNum - 3) {
-                fakeDate.setDate(now.getDate() - 3);
-            } 
-            // 第 N-6 组设定为 6 天前完成 (diffDays = 6)
-            else if (i === currentGNum - 6) {
-                fakeDate.setDate(now.getDate() - 6);
-            } 
-            // 其他组设定为今天完成，暂不触发复习
-            else {
-                fakeDate = now;
-            }
-            
-            history[i] = fakeDate.toISOString().split('T')[0];
-        } 
-        // 如果是当前选中的这一组，无论之前有没有记录，都更新为今天
-        else if (i === currentGNum) {
-            history[i] = todayStr;
+        let targetDate = new Date(now); // 复制今天的时间
+
+        if (i === currentGNum) {
+            // 当前组：设为今天
+        } else if (i === currentGNum - 1) {
+            targetDate.setDate(now.getDate() - 1); // 设为 1 天前
+        } else if (i === currentGNum - 3) {
+            targetDate.setDate(now.getDate() - 3); // 设为 3 天前
+        } else if (i === currentGNum - 6) {
+            targetDate.setDate(now.getDate() - 6); // 设为 6 天前
+        } else {
+            // 其他已学过的组：设为很久以前（比如20天前），不触发复习
+            targetDate.setDate(now.getDate() - 20);
         }
+        
+        // 统一存储为 YYYY-MM-DD 格式
+        history[i] = targetDate.toISOString().split('T')[0];
     }
 
-    // 存入本地存储
     localStorage.setItem('eng_study_history', JSON.stringify(history));
-    
-    alert(`🎉 进度已同步！\n第 1 至 ${currentGNum} 组已全部标记为已学。\n看板已根据 1247 法则更新复习任务。`);
-    
-    // 刷新看板显示
+    alert(`🎉 记录成功！第 ${currentGNum} 组已学完。\n1-6组已自动标记，看板任务已生成。`);
     updateDailyDashboard();
 }
+    
+    // 刷新看板显示
 function updateDailyDashboard() {
     const dashboard = document.getElementById('taskList');
     const dateSpan = document.getElementById('todayDate');
-    if(!dashboard || !dateSpan) return;
+    if (!dashboard) return;
 
-    const todayObj = new Date();
-    dateSpan.innerText = todayObj.toISOString().split('T')[0];
+    // 获取今天凌晨的时间
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    dateSpan.innerText = today.toISOString().split('T')[0];
 
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
     let tasks = [];
     
+    // 1. 计算新课建议
     let maxGroup = 0;
-    Object.keys(history).forEach(g => { if(parseInt(g) > maxGroup) maxGroup = parseInt(g); });
+    Object.keys(history).forEach(g => { if (parseInt(g) > maxGroup) maxGroup = parseInt(g); });
     tasks.push(`🆕 <b>新课建议：</b> 开始第 <a href="#" onclick="jumpToGroup(${maxGroup})" style="color: #f1c40f; font-weight: bold; text-decoration: underline;">${maxGroup + 1}</a> 组`);
 
-    let reviewGroups = [];
+    // 2. 计算复习任务
+    let reviewLinks = [];
     for (let gNum in history) {
         const studyDate = new Date(history[gNum]);
-        const diffDays = Math.ceil(Math.abs(todayObj - studyDate) / (1000 * 60 * 60 * 24)) - 1; 
+        studyDate.setHours(0, 0, 0, 0);
 
+        // 计算两个日期之间相差的【整天数】
+        const diffTime = today.getTime() - studyDate.getTime();
+        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+
+        // 匹配 1-2-4-7 记忆节点的复习天数
         if (diffDays === 1 || diffDays === 3 || diffDays === 6) {
-            reviewGroups.push({num: gNum, day: diffDays});
+            reviewLinks.push(`<a href="#" onclick="jumpToGroup(${gNum-1})" style="color: #f1c40f; font-weight: bold; text-decoration: underline; margin-right:10px;">第 ${gNum} 组</a>`);
         }
     }
 
-    if (reviewGroups.length > 0) {
-        let reviewHTML = `<br>🔄 <b>今日必复习：</b> `;
-        reviewGroups.forEach(item => {
-            reviewHTML += `<a href="#" onclick="jumpToGroup(${item.num-1})" style="color:#2ecc71; text-decoration:underline; font-weight:bold; margin-right:8px;">第 ${item.num} 组</a>`;
-        });
-        tasks.push(reviewHTML);
+    if (reviewLinks.length > 0) {
+        tasks.push(`<br>🔄 <b>今日必复习：</b> ${reviewLinks.join('')}`);
     } else {
         tasks.push(`<br>✅ 今日暂无旧课复习任务，请专注新课！`);
     }
-    dashboard.innerHTML = tasks.join('<br>');
+
+    dashboard.innerHTML = tasks.join('');
 }
 
 // ================= 3. AI 故事生成 (方案三) =================
