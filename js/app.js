@@ -122,7 +122,7 @@ function updateDailyDashboard() {
     
     let maxGroup = 0;
     Object.keys(history).forEach(g => { if(parseInt(g) > maxGroup) maxGroup = parseInt(g); });
-    tasks.push(`🆕 <b>新课建议：</b> 开始第 <a href="#" onclick="jumpToGroup(${maxGroup})">${maxGroup + 1}</a> 组`);
+    tasks.push(`🆕 <b>新课建议：</b> 开始第 <a href="#" onclick="jumpToGroup(${maxGroup})" style="color: #f1c40f; font-weight: bold; text-decoration: underline;">${maxGroup + 1}</a> 组`);
 
     let reviewGroups = [];
     for (let gNum in history) {
@@ -137,7 +137,7 @@ function updateDailyDashboard() {
     if (reviewGroups.length > 0) {
         let reviewHTML = `<br>🔄 <b>今日必复习：</b> `;
         reviewGroups.forEach(item => {
-            reviewHTML += `<a href="#" onclick="jumpToGroup(${item.num-1})" style="color:white; text-decoration:underline; margin-right:8px;">第 ${item.num} 组</a>`;
+            reviewHTML += `<a href="#" onclick="jumpToGroup(${item.num-1})" style="color:#2ecc71; text-decoration:underline; font-weight:bold; margin-right:8px;">第 ${item.num} 组</a>`;
         });
         tasks.push(reviewHTML);
     } else {
