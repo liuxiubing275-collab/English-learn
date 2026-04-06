@@ -87,6 +87,24 @@
             </div>
         </div>
 
+<!-- 在 page-words 的单词卡片内增加 -->
+<div class="row-buttons">
+    <button class="action-btn" onclick="generateGroupStory()" style="background-color: #8e44ad; width: 100%; margin-top: 20px;">
+        🪄 用本组 10 词生成 AI 故事
+    </button>
+</div>
+
+<!-- 用于显示生成的 AI 故事 -->
+<div id="groupStoryArea" class="card" style="display: none; margin-top: 20px; border: 1px solid #8e44ad; background-color: #fdf6ff;">
+    <h2 style="color: #8e44ad;">📖 本组情境串讲</h2>
+    <div id="groupStoryContent" class="article-display" style="background: white; font-size: 16px;">
+        正在构思故事...
+    </div>
+    <button class="action-btn" onclick="transferGroupStoryToArticle()" style="background-color: #27ae60;">
+        📖 同步到“文章跟读”练习
+    </button>
+</div>
+
         <div class="card">
             <h2>✍️ 盲听拼写</h2>
             <div id="dictationSingleMode">

@@ -576,6 +576,119 @@ function quitArticleDictation() {
     document.getElementById('articleDisplay').style.filter = 'none';
 }
 
+// ================= 10 词智能成文逻辑 =================
+
+async function generateGroupStory() {
+    const apiKey = localStorage.getItem('silicon_api_key');
+    if (!apiKey) {
+        alert("请先在‘互动聊天’版块设置并保存 API Key！");
+        return;
+    }
+
+    // 1. 获取当前组的 10 个单词
+    const bounds = getGroupBounds();
+    const currentWords = [];
+    for (let i = bounds.start; i <= bounds.end; i++) {
+        if (wordList[i]) {
+            currentWords.push(wordList[i].en);
+        }
+    }
+
+    if (currentWords.length === 0) {
+        alert("当前组没有单词，无法生成故事。");
+        return;
+    }
+
+    // 2. UI 反馈
+    const storyArea = document.getElementById('groupStoryArea');
+    const storyContent = document.getElementById('groupStoryContent');
+    storyArea.style.display = 'block';
+    storyContent.innerText = `正在为这 10 个单词构思情境：\n[ ${currentWords.join(", ")} ] ...`;
+    
+    // 自动滚动到显示区域
+    storyArea.scrollIntoView({ behavior: 'smooth' });
+
+    // 3. 构建 Prompt
+    const prompt = `你是一位专业的英语老师。请使用以下 10 个单词编写一段连贯、有逻辑且地道的英语短文（约 100-150 词）：
+    单词列表：[${currentWords.join(", ")}]。
+    
+    要求：
+    1. 故事内容要有趣、生活化或励志。
+    2. 必须包含所有这 10 个单词，并在文中将这些单词用 **粗体** 标注。
+    3. 在短文下方提供准确的中文对照翻译。
+    
+    格式如下：
+    (英文短文内容)
+    ---
+    (中文翻译内容)`;
+
+    // 4. 调用 AI 接口
+    try {
+        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'Qwen/Qwen2.5-7B-Instruct', // 使用 Qwen 模型
+                messages: [
+                    { role: "system", content: "你是一个擅长情境化教学的英语助教。" },
+                    { role: "user", content: prompt }
+                ],
+                temperature: 0.7
+            })
+        });
+
+        if (!response.ok) throw new Error("AI 响应失败");
+
+        const data = await response.json();
+        const fullText = data.choices[0].message.content;
+
+        // 5. 渲染结果（处理换行和粗体）
+        storyContent.innerHTML = fullText
+            .replace(/\n/g, '<br>') // 换行符转为 HTML 换行
+            .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e67e22;">$1</strong>'); // 粗体变色
+
+    } catch (error) {
+        console.error(error);
+        storyContent.innerText = "⚠️ 生成失败，请检查网络或 API Key。";
+    }
+}
+
+// 联动功能：将生成的 AI 故事发送到“文章跟读”板块
+function transferGroupStoryToArticle() {
+    const storyHtml = document.getElementById('groupStoryContent').innerHTML;
+    if (!storyHtml || storyHtml.includes("正在构思")) return;
+
+    // 解析出英文部分（分割线之前的内容）
+    const parts = document.getElementById('groupStoryContent').innerText.split('---');
+    const englishText = parts[0].trim();
+    const chineseText = parts.length > 1 ? parts[1].trim() : "";
+
+    // 切换到文章板块
+    switchTab('articles');
+
+    // 注入内容到文章显示区
+    const articleDisplay = document.getElementById('articleDisplay');
+    articleDisplay.innerHTML = `
+        <div style="border-left: 4px solid #8e44ad; padding-left: 10px; background: #fdf6ff;">
+            <p style="color: #8e44ad; font-weight: bold; font-size: 14px;">✨ AI 生成组故事：</p>
+            <p style="font-weight: 500;">${englishText}</p>
+            <p style="color: #7f8c8d; font-size: 14px; margin-top: 10px;">${chineseText}</p>
+        </div>
+    `;
+
+    // 更新全局变量以便进行跟读和听写
+    currentArticleText = englishText;
+    
+    // 重置听写模块
+    quitArticleDictation();
+    
+    // 提示用户
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 // ================= 9. AI 聊天功能 =================
 
 function switchChatMode(mode) {
