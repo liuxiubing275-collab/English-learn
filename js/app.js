@@ -98,17 +98,53 @@ function markCurrentGroupFinished() {
     const val = document.getElementById('groupSelect').value;
     if (val === 'all') { alert("请先选择一个具体的组号进行学习。"); return; }
     
-    const groupNum = parseInt(val) + 1;
-    const today = new Date().toISOString().split('T')[0]; 
+    const currentGNum = parseInt(val) + 1;
+    const now = new Date();
+    const todayStr = now.toISOString().split('T')[0];
 
+    // 读取历史记录
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
-    history[groupNum] = today;
+    
+    // 逻辑：从第 1 组遍历到当前组
+    for (let i = 1; i <= currentGNum; i++) {
+        // 如果该组还没有记录，则进行“智能补全”
+        if (!history[i]) {
+            let fakeDate = new Date();
+            
+            // 为了让看板立即出现 1、4、6 组的复习任务：
+            // 第 N-1 组设定为 1 天前完成 (diffDays = 1)
+            if (i === currentGNum - 1) {
+                fakeDate.setDate(now.getDate() - 1);
+            } 
+            // 第 N-3 组设定为 3 天前完成 (diffDays = 3)
+            else if (i === currentGNum - 3) {
+                fakeDate.setDate(now.getDate() - 3);
+            } 
+            // 第 N-6 组设定为 6 天前完成 (diffDays = 6)
+            else if (i === currentGNum - 6) {
+                fakeDate.setDate(now.getDate() - 6);
+            } 
+            // 其他组设定为今天完成，暂不触发复习
+            else {
+                fakeDate = now;
+            }
+            
+            history[i] = fakeDate.toISOString().split('T')[0];
+        } 
+        // 如果是当前选中的这一组，无论之前有没有记录，都更新为今天
+        else if (i === currentGNum) {
+            history[i] = todayStr;
+        }
+    }
+
+    // 存入本地存储
     localStorage.setItem('eng_study_history', JSON.stringify(history));
     
-    alert(`🎉 记录成功！第 ${groupNum} 组的复习计划已自动开启。`);
+    alert(`🎉 进度已同步！\n第 1 至 ${currentGNum} 组已全部标记为已学。\n看板已根据 1247 法则更新复习任务。`);
+    
+    // 刷新看板显示
     updateDailyDashboard();
 }
-
 function updateDailyDashboard() {
     const dashboard = document.getElementById('taskList');
     const dateSpan = document.getElementById('todayDate');
