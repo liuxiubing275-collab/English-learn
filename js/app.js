@@ -94,57 +94,65 @@ async function loadAllData() {
 
 // ================= 2. 自动化看板 (方案一) =================
 
+// 辅助函数：获取本地日期的 YYYY-MM-DD 字符串（解决时区问题）
+function getLocalDateString(date) {
+    let y = date.getFullYear();
+    let m = (date.getMonth() + 1).toString().padStart(2, '0');
+    let d = date.getDate().toString().padStart(2, '0');
+    return `${y}-${m}-${d}`;
+}
+
+// 1. 修复后的标记函数
 function markCurrentGroupFinished() {
     const val = document.getElementById('groupSelect').value;
     if (val === 'all') { alert("请先选择一个具体的组号进行学习。"); return; }
     
     const currentGNum = parseInt(val) + 1;
-    const now = new Date();
-    // 归一化时间：设为今天的凌晨 0 点，避免时分秒干扰
-    now.setHours(0, 0, 0, 0);
+    const today = new Date();
+    // 强制清除时分秒
+    today.setHours(0, 0, 0, 0);
 
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
     
     for (let i = 1; i <= currentGNum; i++) {
-        let targetDate = new Date(now); // 复制今天的时间
+        let targetDate = new Date(today); // 基于本地今天
 
         if (i === currentGNum) {
-            // 当前组：设为今天
+            // 今天完成
         } else if (i === currentGNum - 1) {
-            targetDate.setDate(now.getDate() - 1); // 设为 1 天前
+            targetDate.setDate(today.getDate() - 1); // 确保是本地时间的昨天
         } else if (i === currentGNum - 3) {
-            targetDate.setDate(now.getDate() - 3); // 设为 3 天前
+            targetDate.setDate(today.getDate() - 3); // 3天前
         } else if (i === currentGNum - 6) {
-            targetDate.setDate(now.getDate() - 6); // 设为 6 天前
+            targetDate.setDate(today.getDate() - 6); // 6天前
         } else {
-            // 其他已学过的组：设为很久以前（比如20天前），不触发复习
-            targetDate.setDate(now.getDate() - 20);
+            targetDate.setDate(today.getDate() - 20); // 很久以前
         }
         
-        // 统一存储为 YYYY-MM-DD 格式
-        history[i] = targetDate.toISOString().split('T')[0];
+        // 使用本地日期格式存储
+        history[i] = getLocalDateString(targetDate);
     }
 
     localStorage.setItem('eng_study_history', JSON.stringify(history));
-    alert(`🎉 记录成功！第 ${currentGNum} 组已学完。\n1-6组已自动标记，看板任务已生成。`);
+    alert(`🎉 记录成功！第 ${currentGNum} 组已学完。\n第 1、4、6 组已进入今日复习清单。`);
     updateDailyDashboard();
 }
-    
-    // 刷新看板显示
+
+// 2. 修复后的看板显示函数
 function updateDailyDashboard() {
     const dashboard = document.getElementById('taskList');
     const dateSpan = document.getElementById('todayDate');
     if (!dashboard) return;
 
-    // 获取今天凌晨的时间
+    // 获取本地今天
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    dateSpan.innerText = today.toISOString().split('T')[0];
+    dateSpan.innerText = getLocalDateString(today);
 
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
     let tasks = [];
     
-    // 1. 计算新课建议
+    // 1. 计算最大组号（建议新课）
     let maxGroup = 0;
     Object.keys(history).forEach(g => { if (parseInt(g) > maxGroup) maxGroup = parseInt(g); });
     tasks.push(`🆕 <b>新课建议：</b> 开始第 <a href="#" onclick="jumpToGroup(${maxGroup})" style="color: #f1c40f; font-weight: bold; text-decoration: underline;">${maxGroup + 1}</a> 组`);
@@ -152,20 +160,25 @@ function updateDailyDashboard() {
     // 2. 计算复习任务
     let reviewLinks = [];
     for (let gNum in history) {
-        const studyDate = new Date(history[gNum]);
+        // 解析存储的日期字符串
+        const dateParts = history[gNum].split('-');
+        const studyDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
         studyDate.setHours(0, 0, 0, 0);
 
-        // 计算两个日期之间相差的【整天数】
+        // 计算天数差
         const diffTime = today.getTime() - studyDate.getTime();
         const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
 
-        // 匹配 1-2-4-7 记忆节点的复习天数
+        // 调试用：console.log(`组${gNum} 的差值是: ${diffDays}`);
+
         if (diffDays === 1 || diffDays === 3 || diffDays === 6) {
             reviewLinks.push(`<a href="#" onclick="jumpToGroup(${gNum-1})" style="color: #f1c40f; font-weight: bold; text-decoration: underline; margin-right:10px;">第 ${gNum} 组</a>`);
         }
     }
 
     if (reviewLinks.length > 0) {
+        // 对显示的组号进行排序（从大到小显示，视觉更清晰）
+        reviewLinks.reverse(); 
         tasks.push(`<br>🔄 <b>今日必复习：</b> ${reviewLinks.join('')}`);
     } else {
         tasks.push(`<br>✅ 今日暂无旧课复习任务，请专注新课！`);
