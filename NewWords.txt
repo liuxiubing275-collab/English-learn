@@ -214,3 +214,201 @@ penguin | n.企鹅
 The penguin waddled across the ice to join the rest of its colony.  中文: 企鹅摇摇摆摆地走过冰面，加入它的群体。
 waddle | vi.摇摇摆摆地走；(鸭子似地)蹒跚行走，摇摆地行走 n.摇摆的步子，蹒跚
 The duck waddled across the pond to join its friends.  中文: 鸭子摇摇摆摆地走过池塘，去找它的伙伴。
+wedding | n. 婚礼，结婚庆典;婚礼的;<英>结婚纪念，结婚纪念日;结合 | v. 结婚，娶，嫁;（使）结合;坚持，专心于（活动、信仰或制度）（wed 的现在分词） | 【名】 （Wedding）（德）韦丁（人名）
+Today's our wedding anniversary.  中文：今天是我们的结婚纪念日。
+photographer | n. 拍照者，摄影师
+She was a keen amateur photographer.  中文：她是一个痴迷的业余摄影师。
+experience | n. 经历，往事;经验，阅历;传统 | v. 经历，遭遇;体会到，感受到
+It was a chastening experience.  中文：那是一次令人遗憾的经历。
+camera | n. 照相机;摄影机 | n. （Camera）人名;（英、意、西）卡梅拉
+The camera whirred and clicked.  中文：相机发出嗡嗡声和喀嚓声。
+equipment | n. 设备，用具;（对某人或某物的）装备过程;（做某事应具备的）素质，才能
+New equipment is urgently needed.  中文：亟需新设备。
+shoot | v. 开（枪），射击;射杀，射伤;狩猎，打猎;投（球），射门;玩，打（某种游戏）;拍摄;（使）急速移动;突然把……投向;迅速成名;（疼痛）穿刺;闩上，拔出（门闩）;（植物，种子）发芽;<非正式>注射（毒品）;准确刨平（木板的边角） | n. 嫩芽，新枝;拍摄;狩猎，射猎场，射击比赛;斜道，滑运道（=chute）;急流，奔流 | int. 说吧，请讲;<美>糟糕，哎呀
+Cameras ready? OK, shoot!  中文：摄影机准备好了吗？好，开拍！
+bride | n. 新娘，即将（或刚）结婚的女子 | 【名】 （Bride）（英）布赖德，（法）布里德（人名）
+The bride was dressed in white.  中文：新娘身穿白色礼服。
+classical | adj. 经典的，传统的;和古希腊与古罗马文化相关的;（音乐）古典的;文科的，人文科学的;典型的，有代表性的;相对论和量子力学理论前的概念、理论的，古典力学的
+Most classical music sends me to sleep.  中文：大多数古典音乐都会让我睡着。
+capture | v. 俘获，捕获;夺取，占领;吸引，引起;记录，体现;拍摄，录制;吃掉（国际象棋棋子）;使（数据）保存于电脑中;俘获（原子，亚原子粒）;（河流）袭夺 | n. 捕获，被捕获;被捕获的人（或物）;占领，攻占;夺取，抢占;（数据）存储
+Swanson persuaded Hubley to work undercover to capture the killer.  中文：斯旺森说服了赫布利秘密工作以捕获凶手。
+emotion | n. 情感，情绪;激情，强烈的情感
+Jealousy is a primal emotion.  中文：嫉妒是一种原始情感。
+bridal | adj. 新娘的;婚礼的 | n. 婚礼
+She wore a floor length bridal gown.  中文：她穿了一件拖地婚纱。
+prep | n. <英>家庭作业（私立学校用语）;<非正式，英>准备功课的时间;<非正式>准备;<非正式>预备教育;<非正式，美>预科生 | v. <非正式，美>把……准备好，使预备好;为（患者）作手术准备;上预备学校 | abbr. 介词（preposition）;准备（preparation）;预备的（preparatory） | 【名】 （Prep）（俄）普列普（人名）
+Each test comes in advance with a prep sheet, telling you how to get ready for that particular test.  中文：每次考试前都会有一份准备表，告诉你如何为特定的考试做准备。
+groom | v. （给动物）擦洗，刷洗;（动物为自己或另一动物）梳理毛发;梳妆，打扮;修饰，修整（某物）;培训，使做好准备;（尤指透过网际网路）勾引，诱奸（儿童） | n. 新郎;马夫;<英>王室侍从官 | 【名】 （Groom）（美）格鲁姆（人名）
+Guests toasted the bride and groom with champagne.  中文：客人们以香槟为新娘新郎敬酒。
+candid | adj. 坦率的，直言不讳的;抓拍的，偷拍的;公正的 | 【名】 （Candid）（罗）坎迪德（人名）
+I haven't been completely candid with him.  中文：我没有完全对他说实话。
+genuine | adj. 真正的，非伪造的;真诚的，真心的
+Only genuine refugees can apply for asylum.  中文：只有真正的难民才能申请政治避难。
+venue | n. （事件的）发生地点，（活动的）场所;<英，法律>审判地（指郡或区）
+We're still trying to decide on a venue.  中文：我们仍然在设法选定一个会场。
+ceremony | n. 仪式，典礼;礼节，礼仪，客套
+He left halfway through the ceremony.  中文：他在仪式进行到一半时离开了。
+aside | adv. 在旁边，到（或向）一边;积攒，留出;除……以外 | n. （戏剧或电影中的）旁白;低语，悄悄话;离题话，题外话
+She pulled the curtain aside.  中文：她把窗帘拉向一边。
+petal | n. 花瓣
+A midge gathers pollen from a cacao flower by sticking its head inside a "petal pouch" that contains both pollen and a sticky nectar reward.  中文：一只摇蚊把它的头伸进一个“花瓣囊”里，收集可可花的花粉，“花瓣囊”里既有花粉，也有粘稠的花蜜。
+vow | n. 誓约，诺言;（婚礼等上的）誓言 | v. 立誓，发誓
+While many models vow to go back to college, few do.  中文：很多模特儿发誓要重返大学，但几乎无人做到。
+reception | n. 接待处，服务台;欢迎会，招待会;欢迎，反响;（收音机或电视信号）接收效果，接收质量;接收，接待;（美橄）接球;<英>（幼儿学校的）小班，学前班
+The reception was a subdued affair.  中文：招待会开得冷冷清清的。
+decoration | n. 装饰，装饰品;勋章，奖章;装潢，装饰风格
+He gave Stephanie a free hand in the decoration.  中文：他让斯蒂芬妮在装潢时便宜行事。
+mingling | n. 交际 | v. 混合，联合（mingle 的现在分词）
+Even the well-off can be seen mingling with the masses in Walmart or Tesco.  中文：甚至有人看到富人裹挟在沃尔玛或者乐购超市的拥挤人群中购物。
+newlywed | adj. 新婚的 | n. 新婚夫妇
+My newlywed wife and I are deeply in love.  中文：我和我的新婚妻子彼此深爱着对方。
+speech | n. 演说，发言，谈话;说话的能力;说话方式;口语，言语;（戏剧中的）台词;（该词常用于使某人感到自己所说的话很愚蠢）长篇大论
+He muffed his opening speech.  中文：他搞砸了自己的开幕讲话。
+fulfill | vt. 履行;实现;满足;使结束（等于 fulfil）
+We've so much love to fulfill.  中文：我们有很多的爱要实现。
+transfer | v. （使）转移，搬迁;转移（感情），传染（疾病），转让（权力等）;（使）调动，转职;转会，使转会（尤指职业足球队）;（将所得学分）转到（另一所学校）;转接（电话）;将（钱）转到（另一个账户上）;转让（财产，权利），移交（责任）;转用;转存，转录（资料、音乐等），改编;（旅途中）转乘，换乘;转印（图画，图案）;（通过延伸、隐喻）转变（词义，短语义） | n. 转移，转让，调动;（运动员）转会;转换，过渡;已调动的人，已转移的东西;（旅行中）转乘，转搭;<美>转车票，换乘票;纸上可转印的图画或图案;迁移（将已习得的行为在新的情况下应用）
+The novel does not transfer well to the movies.  中文：这部小说不太适宜改编成电影。
+successful | adj. 成功的，如愿以偿的;事业有成的，飞黄腾达的;（公司、影片、产品等）利润丰厚的，非常赚钱的
+I think it's going to be successful.  中文：我认为它将会成功。
+cashier | n. 收银员，出纳员 | v. 开除，革除（军职）
+The cashier gives me receipts.  中文：收银员给我收据。
+register | n. 登记表，注册簿;注册员;（人或乐器的）声区，音区;（适合特定场合使用的）语体风格，语域;（印刷，摄影）套准，叠合;<美>现金出纳机;（电子设备的）寄存器;<美>（供暖或制冷设备的）调风口，节气门;（设计图案组成的）条，局部 | v. 登记，注册;（正式地或公开地）发表意见，提出主张;流露出，表达出;注意到，受到注意;（仪器上）显出，显示;把……挂号邮寄;取得（结果），得（分）;（印刷，摄影）套准，叠合 | 【名】 （Register）（美）雷吉斯特（人名）
+Thousands lined up to register to vote.  中文：数千人排队登记投票。
+aisle | n. 走廊，过道;（教堂）耳堂，侧堂
+Coffee and tea are in the next aisle.  中文：咖啡和茶在下一个走道处。
+sticker | n. （有图或文字的）粘贴标签，贴纸;<非正式>坚持不懈者;尖刀;<非正式>难题 | 【名】 （Sticker）（美、德、法）施蒂克（人名）
+Here is a sticker for you.  中文：奖励你一个贴纸。
+restock | v. 补充货源，补足，重新进货;再储存，备办新货
+I have to restock the freezer.  中文：我得补充冷冻柜里的东西了。
+shelf | n. 搁板，架子;（尤指水中）陆架，底岩;<非正式>告密者（复数 shelfs） | v. <非正式>告发（某人）
+The shoes go on the shoe shelf.  中文：鞋子应该放在鞋架上。
+expire | v. 到期，失效;死亡;呼气，吐气;（任期）届满
+When does your driving licence expire?  中文：你的驾照什么时候到期？
+recommendation | n. 正式建议，提议;推荐，介绍;<美>推荐信
+I got the job on the strength of your recommendation.  中文：由于您的推荐，我得到了那份工作。
+wine | n. 葡萄酒，果蔬酒;深紫红色 | v. 喝酒;设酒宴款待（某人）;<西印度>跳摆臀舞 | 【名】 （Wine）（英）瓦恩（人名）
+Wine vinegar tenderizes meat.  中文：酒醋能让肉变得软嫩。
+spill | v. （使）洒出，泼出，溢出;（东西）倒出，洒落;涌出，蜂拥而出;（光线）透进，倾泻在……上;向（某人）说出秘密;使（某人）从马上（或自行车上）摔下来;（球赛中）掉球;（航海）减少（帆）的受风压力（多指把帆放松） | n. 洒出（量），溢出（量）;（从马、自行车上等的）摔下，跌下;<澳>职位空缺;（点火用的）纸捻，木片;小塞子 | 【名】 （Spill）（德、美、英、法）施皮尔（人名）
+The tanker began to spill its cargo of oil.  中文：油轮已开始漏油。
+colleague | n. 同事，同僚
+They rated him highly as a colleague.  中文：作为同事，他们对他评价甚高。
+alarm | n. 警报;警报器;闹钟;惊恐，担忧 | v. 使不安，使恐慌;给（门等）安装警报器
+An alarm bell went off.  中文：警钟响了。
+backyard | n. 后院;后庭
+We found a man nosing around in our backyard.  中文：我们发现有个人在我们后院里找什么东西。
+sturdy | adj. 结实的，坚固的;（人或身体）强壮的，健壮的;坚决的，坚定的 | n. （绦虫幼虫在脑中形成包囊使绵羊产生的）晕倒病，蹒跚病 | 【名】 （Sturdy）（英）斯特迪（人名）
+She was a short, sturdy woman in her early sixties.  中文：她是一位六十出头、矮小结实的女人。
+pepper | n. 胡椒粉;辣椒，甜椒，灯笼椒;胡椒;辣椒粉;（棒球）热身投击球练习 | v. （在食物上）撒胡椒粉;连续射击;在……上撒，使布满; （演讲、文章等）充满…… | 【名】 （Pepper）（英、德、意）佩珀（人名）
+She shook some pepper onto her sandwich.  中文：她在她的三明治上撒了些胡椒。
+necessary | adj. 必要的，必需的;必然的，不可避免的;迫不得已的，非自愿的 | n. （生活）必需品;<英，非正式>必要的事（the necessary）;<英，非正式>足够的钱（the necessary） | 【名】 （Necessary）（英）内塞瑟里（人名）
+I can take the car if necessary.  中文：如果必要的话，我可以乘汽车去。
+dig | v. 搜寻，寻找;<非正式，旧>喜欢;挖，掘 | n. 挖苦，嘲讽;（用手指或肘部）轻碰，轻戳;考古发掘 | 【名】 （Dig）（罗）迪格（人名）
+She gave him a dig in the ribs.  中文：她轻轻地戳了一下他的肋部。
+soil | n. 泥土，土壤;（可供某物发展的）土壤，温床;国土，领土;<文>耕作，务农（the soil）;粪便 | v. 弄脏，玷污
+Farmers grow rice in the rich soil.  中文：农民们在肥沃的土地上种水稻。
+edge | n. 边，边缘;锋，刃;优势;影响力，奇特的品质;（声音里的）尖锐，怒气;（坏事的）边缘，临界点;棱 | v. 缓慢地移动;给……加边;险胜;用球拍边击球;倾斜滑雪;修剪（草地边缘）;使锐利，使尖锐 | 【名】 （Edge）（英）埃奇（人名）
+I sat down at the water's edge.  中文：我在水边坐了下来。
+settle | v. 解决，结束（争端等）;确定，决定;定居，安家;殖民，移居于;安置，安顿;（使）平静，（使）安定;降落，停留;（使）沉降，下陷;付清，结算;处理，分配（财产）;笼罩，稳定下来;把......放好，安放;（无可奈何地）接受（或答应） | n. 高背扶手木长椅 | 【名】 （Settle）（英）塞特尔（人名）
+It's time to settle this mano-a-mano.  中文：现在是当面解决这个问题的时候了。
+weed | n. 野草，杂草;<非正式>香烟，烟草（the weed）;水草，水生植物;大麻;<非正式>瘦弱的人，懦弱的人;<非正式>（长腿）瘦弱的马 | v. 除草，为……除杂草 | 【名】 （Weed）（美、英、加、印、澳）威德（人名）
+He is eager to weed out the many applicants he believes may be frauds.  中文：他急于剔除那些他认为可能是行骗的申请人。
+regularly | adv. 定期地，有规律地;频繁地，经常地;均匀地，匀称地;（语法）变化规律地
+She regularly goes parachuting.  中文：她经常去从事跳伞活动。
+bloom | n. 花，花朵;花期;青春焕发，风华正茂;（肤色的）红润;（一些水果和植物的）粉衣，粉霜;（尤指音乐录音中）饱满响亮的声音;方坯 | v. 开花，绽放;繁荣，兴旺;精神焕发;给（透镜）敷膜;把（铸块）铸成方坯 | 【名】 （Bloom）（英）布卢姆，（瑞典、西）布洛姆（人名）
+The daffodils were in full bloom.  中文：水仙花盛开了。
+promising | adj. 有希望的，有前途的 | v. 承诺，答应;使很可能，预示（promise 的现在分词形式）
+He was voted most promising new director.  中文：他当选为最有前途的新导演。
+appear | v. 出现，呈现;首次使用，起源;出庭;演出，出场;出版，发表;记载，提及;看来，似乎;表现得……;<非正式>到达
+She will appear in court tomorrow.  中文：她明天出庭。
+proud | adj. 自豪的，得意的;令人自豪的;傲慢的，自负的;自尊的，自重的;秀丽的，壮观的;凸出的，隆起的;（肌肉）愈合伤口四周赘生的;（动物）有力量的，精力充沛的 | 【名】 （Proud）（英）普劳德（人名）
+She must be very proud of herself.  中文：她一定非常自豪。
+belove | vt. 爱（通常用于被动语态，与of, by连用）
+No example sentence available. 中文：暂无例句。
+patience | n. 耐心;耐性;忍耐力;考验某人的耐心;<英>单人纸牌游戏
+'Patience' is my middle name!  中文：我的最大特点就是有耐心！
+abundant | adj. 大量的，丰富的，充足的
+There is an abundant supply of cheap labour.  中文：有丰富的廉价劳动力供应。
+cherish | v. 珍视，珍爱;怀念（过去），抱有（希望）
+"Cherish her," I said.  中文：“珍惜她。”我说。
+tradition | n. 传统，惯例;传统故事，传说，传统信仰;和著名历史人物有共同品质的人;（神学）圣传
+This region is steeped in tradition.  中文：这个地区有着深厚的传统。
+piano | n. 钢琴 | n. （Piano）人名;（法、意、葡）皮亚诺
+The piano was in good condition.  中文：这台钢琴状况良好。
+eager | adj. 热切的，渴望的，渴求的 | 【名】 （Eager）（英）伊格（人名）
+He was eager to get into politics.  中文：他渴望从政。
+instruction | n. 用法说明;指示，吩咐;教授，指导;（计算机的）指令，命令;给初级律师（或辩护律师、陪审团）的指示 | adj. 说明用法的
+Each candidate is given instruction in safety.  中文：每位候选人都被给予了安全指导。
+demonstrate | v. 证明;示范，演示;表露;游行，示威
+We want to demonstrate our commitment to human rights.  中文：我们想表明我们对人权的信念。
+correct | adj. 正确的，无误的;恰当的，合适的;（行为）合乎礼节的，得体的;（行为）被人认可的，赞许的 | v. 改正，纠正;批改;指出错误;（医疗）矫正
+Yes, that's basically correct.  中文：对，基本正确。
+steady | adj. 平稳的，稳步的，持续的;稳定的，恒定的;稳固的，牢固的;沉着的，冷静的;（人）稳重的，可靠的 | v. 使平稳，稳住;（使）稳定，（使）固定（一段时间）;（使）镇定，（使）冷静 | n. <非正式>关系确定的情侣;（支撑大篷车或其他车辆的）支架，撑竿 | int. 当心，冷静点 | adv. 稳定地，持续地，稳固地
+She slowed to a steady walk.  中文：她慢下来，稳步行走。
+diligently | adv. 勤奋地;勤勉地
+In contrast, when we are diligently focused, our attention tends to be towards the details of the problems we are trying to solve.  中文：相反，当我们努力集中注意力时，我们的注意力往往会集中在我们试图解决的问题的细节上。
+dedication | n. 献身，奉献;献辞;落成典礼
+Her dedication to her work was admirable.  中文：她对工作的奉献精神可钦可佩。
+technique | n. 技巧，工艺;（尤指体育或艺术方面的）技巧，技术
+She showed her students the technique.  中文：她向学生演示了那个技巧。
+effort | n. 努力，艰难的尝试;力气，精力;有组织的活动;努力的结果，成就
+You should put more effort into your work.  中文：你应该更加努力地工作。
+recital | n. 朗诵，吟诵;独奏会;背诵;独唱会
+She learned to play the instrument when she was a small child and gave her first public recital at age 9.  中文：当她还是个小孩子的时候，就学会了演奏乐器，并在9岁时举行了她的第一次公开独奏会。
+confidence | n. 自信，信心;信任，信赖;把握，肯定;保密，机密;秘密，知心话
+Her confidence had never flagged.  中文：她的信心从未减弱。
+event | n. 事件，大事;社交场合，既定活动;赛事，比赛项目;<古>结果
+The event was voted a great success.  中文：大家认为这项活动很成功。
+reassure | v. 使安心，使消除疑虑
+Banks are built to look solid to reassure their customers.  中文：银行修建得看上去很坚固，以使顾客放心。
+stage | n. 阶段，时期;旅程（或赛跑中）的一段;舞台;戏剧，戏剧表演;（尤指政治）舞台，活动领域;（火箭的）级;层，楼层，塔层;演员职业;<非正式>马车;（显微镜的）镜台;（电子）（电路的）级;（地质）（年代地质学用语）与某时代对应的一段地层，层 | vt. 上演，演出;主办，举行;使发生;成功做成（某事）;（医）把（疾病，病人）诊断（或归类）为疾病的特定期 | 【名】 （Stage）（英）斯特奇（人名）
+She pirouetted across the stage.  中文：她用单脚尖站立，从舞台的一边旋转到另一边。
+pride | n. 自豪（感）;自尊（心）;傲慢，自负;<文>最佳状态，全盛期;狮群;引以为傲的人（或事物） | v. 以……自豪（pride oneself on/upon） | 【名】 （Pride）（英）普赖德（人名）
+His words rang with pride.  中文：他的话充满了骄傲。
+enthusiastically | adv. 热心地，满腔热情地
+The announcement was greeted enthusiastically.  中文：这则通告受到了热烈的欢迎。
+guidance | n. 指导，指引;（火箭等的）制导
+Adam sought guidance from the Almighty.  中文：亚当向上帝寻求指导。
+anticipation | n. 预期，预料;期盼，期望;先现音
+There's been an atmosphere of anticipation around here for a few days now.  中文：一种期待的氛围在这儿已存在几天了。
+bustle | v. 奔忙，匆忙地走;繁忙，热闹;使（人沿着某个方向）匆忙地走 | n. 喧闹，繁忙;（旧时用以撑起裙子后部的）裙撑
+We escaped from the hustle and bustle of the city for the weekend.  中文：我们周末时躲开了城市的拥挤喧嚣。
+adventure | n.  冒险（经历），奇遇;冒险的刺激，冒险欲;<古>生意 | v. 冒险;大胆说出;去（某地）探险
+He set off in quest of adventure.  中文：他出行探险去了。
+cityscape | n. 都市风景;城市风光
+What remains is yet another gap in the Berlin cityscape.  中文：留下了柏林城市风光的又一块大缺口。
+marvel | n. 令人惊异的人（或事），奇迹 | v. 感到惊奇，大为赞叹 | 【名】 （Marvel）（美）马弗尔（人名）
+You are a marvel.  中文：你是一个奇迹。
+roll | v. （使）翻滚，滚动;（使）翻身，翻转;行驶，开动;（机器）转动，运转;（液体）滚落，滑落;使……成球状（或管状）;使平坦，压平;把（衣服的边）卷起来;（使）摇摆，摇晃;（使）原地转圈，翻白眼;摇（车窗），卷（窗帘等）;发出持续的声音;（时间）流逝;（产品）从（流水线，机器）产出;<非正式>盗窃;连获成功 | n. 卷，卷轴;卷状食品;赘肉，肥肉;名单，花名册;一管;滚动，翻滚;左右摇晃，振荡;隆隆声，轰轰响;掷骰子;压路机，辊轧机;（地形的）延绵起伏 | 【名】 （Roll）（美、挪、加）罗尔（人名）
+Comedy is the new rock and roll.  中文：说笑表演风头直追摇滚乐。
+hill | n. 山丘，小山;（道路的）斜坡;土堆，小堆;<美，非正式>国会山 | v. 使成堆 | 【名】 （Hill）（英、德、匈、捷、罗、芬、瑞典）希尔，（法、西）伊尔（人名）
+A hawk hovered over the hill.  中文：一只鹰在小山的上空翱翔。
+rhythm | n. （声音或运动的）节奏，韵律，节拍;节奏感;规则变化，节律;（艺术作品的）匀称，和谐;（韵文或散文）抑扬节奏
+It's a funky sort of rhythm.  中文：这是一种音低节奏强的旋律。
+sooth | n. 真相，实情;甜言蜜语，奉承话 | adj. 真实的;甜的，柔软的
+In sooth I am no lord, but only poor Tom Canty of Offal Court in the city.  中文：说实话，我不是什么殿下，只不过是城里杂院可怜的汤姆·康第罢了。
+rock | n. 岩石;礁石;（尤指凸出地面的）岩块，大石块;碎石，石子;<非正式>钻石，宝石;摇滚乐;可信赖的人，靠山;<英>棒棒糖;<非正式>石毒，强效可卡因块;<俚>睾丸（rocks）;轻轻摇动，轻轻摇摆 | v. （使）轻轻摇晃，缓缓摆动;（使）剧烈摇摆，猛烈晃动;使震惊，使害怕;<非正式>（尤指自信或惹人注目地）穿（衣）;<非正式>跳摇滚舞，奏摇滚乐;<俚>很好，棒极了 | 【名】 （Rock）（英、德、匈、意、瑞典）罗克（人名）
+A rock is an inanimate object.  中文：岩石是无生命的物体。
+gently | adv. 文静地，温柔地;轻柔地;渐进地，平缓地;<英，非正式>注意点，慢点
+She pulled gently on the reins.  中文：她轻轻地拉着缰绳。
+drift | v. 飘移，漂流;任其自然地（或不知不觉地）进入（某种状态）;流浪，漂泊;缓慢移动;传出;吹积 | n. 流动，趋势;吹积物，雪堆;主旨，大意;偏航;不作为，优柔寡断;丛生的植物;冰碛;水平巷道
+Do you catch my drift ?  中文：你明白我的大意吗？
+stun | v. 使震惊，使惊讶;使昏迷，（尤指）打昏;给（某人）以深刻印象，使深深感动 | n. 昏迷;打昏;惊倒
+A guard zapped him with the stun gun.  中文：一名警卫用眩晕枪击中了他。
+scenery | n. 风景，景色;舞台布景
+The scenery is magnificent.  中文：景色壮丽。
+sight | n. 视力，视觉;看见，见到;视野，视域;景物，景象;名胜，景点（sights）;志向，目标;（枪或炮上的）瞄准器，（光学仪器的）观测器;<非正式> 奇怪的人，滑稽的人（或事物）;<非正式> 许多，大量;<旧> 观点，见解 | v. （突然）看到，（远远）看见;把（枪）瞄准;（用观测器）观测;调整（火器）的瞄准器，调整（光学仪器）的观测器 | adj. 见票即付的;即席的
+The disease has affected her sight.  中文：这种病影响了她的视力。
+landscape | n. （陆上，尤指乡村的）风景，景色;形势，情形;（陆上或乡村）风景画;横向打印格式 | v. 对……做景观美化，美化……的环境;从事景观美化工作 | adj. 横向列印的
+The landscape had a stark, unworldly beauty.  中文：那景色有一种简朴、超凡的美。
+climate | n. 气候;气候区;氛围，局势
+The economic climate remains uncertain.  中文：经济气候依然是不确定。
+conductor | n. （乐队等的）指挥;售票员，检票员;导体;<英>传导教育的引导者
+The conductor beat time with a baton.  中文：指挥用指挥棒打拍子。
+freedom | n. 自由权，自主权;（状态）自由，自主;行动自由（指不在狱中）;摆脱，免受;自由使用权;<英>荣誉市民称号;<古>（讲话，行为）过分亲密，放肆;直率，坦率 | 【名】 （Freedom）（英）弗里德姆（人名）
+He burbles on about freedom.  中文：他滔滔不绝地谈论着自由。
+journal | n. 杂志，期刊，报纸;日记，日志;（会计）日记账
+Sara confided to her journal.  中文：萨拉在日记中倾吐心事。
+amazing | adj. 惊人的，了不起的;令人诧异的，令人惊愕的;令人高兴的 | v. 使惊奇，使惊愕（amaze 的现在分词形式）
+She has amazing powers of recall.  中文：她有惊人的记忆力。
+fondness | n. 爱好;喜爱
+I've always had a fondness for chocolate cake.  中文：我一直对巧克力蛋糕情有独钟。
