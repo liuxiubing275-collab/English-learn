@@ -1,109 +1,107 @@
 :root {
-    --primary: #4e54c8;
-    --accent: #00d2ff;
-    --bg-dark: #0f172a; /* 深蓝黑背景 */
-    --card-bg: rgba(30, 41, 59, 0.7); /* 半透明卡片 */
-    --text-white: #f8fafc;
-    --border-color: rgba(255, 255, 255, 0.1);
+    --primary: #5856D6;      /* 科技蓝 */
+    --primary-light: #706fd3;
+    --success: #27ae60;      /* 森林绿 */
+    --warning: #f39c12;      /* 亮橙 */
+    --bg: #f2f2f7;           /* 苹果灰背景 */
+    --card-bg: #ffffff;
+    --text: #1c1c1e;
+    --text-sub: #8e8e93;
 }
 
-body {
-    background: radial-gradient(circle at top right, #1e1b4b, var(--bg-dark)); /* 渐变背景 */
-    color: var(--text-white);
-    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-    margin: 0; padding: 15px;
-    min-height: 100vh;
+body { 
+    font-family: -apple-system, system-ui, sans-serif; 
+    margin: 0; padding: 15px; 
+    background-color: var(--bg); 
+    color: var(--text); 
+    line-height: 1.5;
 }
 
-h1 {
-    font-size: 24px; text-align: center;
-    background: linear-gradient(to right, #818cf8, #22d3ee);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 25px;
+/* 适配桌面端，限制最大宽度并居中 */
+@media (min-width: 600px) {
+    body { max-width: 500px; margin: 0 auto; }
 }
 
-/* 导航栏 - 科技感胶囊 */
-.nav-bar {
-    background: rgba(15, 23, 42, 0.8);
-    border: 1px solid var(--border-color);
-    border-radius: 50px;
-    padding: 5px;
-    margin-bottom: 25px;
-    backdrop-filter: blur(10px);
+h1 { text-align: center; font-size: 22px; margin: 15px 0; color: #000; font-weight: 800; }
+
+/* --- 导航栏 --- */
+.nav-bar { 
+    display: flex; background: #e3e3e8; 
+    border-radius: 12px; padding: 3px; margin-bottom: 20px; 
+}
+.nav-btn { 
+    flex: 1; background: transparent; color: var(--text-sub); 
+    border: none; padding: 10px 0; border-radius: 9px; 
+    font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; 
+}
+.nav-btn.active { 
+    background: white; color: var(--primary); 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
 }
 
-.nav-btn {
-    color: #94a3b8;
-    border-radius: 50px;
-    padding: 12px 0;
-    font-weight: bold;
+/* --- 板块控制 (核心修复) --- */
+.page-section { display: none; animation: fadeIn 0.3s ease-out; }
+.page-section.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* --- 卡片容器 --- */
+.card { 
+    background: var(--card-bg); padding: 20px; border-radius: 18px; 
+    margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
+    border: 1px solid rgba(0,0,0,0.02);
+}
+h2 { font-size: 17px; margin-top: 0; color: #2c3e50; font-weight: 700; }
+
+/* --- 按钮布局 (修复双按钮) --- */
+.row-buttons { 
+    display: flex; gap: 10px; margin-top: 10px; width: 100%; 
+}
+.row-buttons button.action-btn { 
+    flex: 1; margin-top: 0; /* 两个按钮等宽并排 */
 }
 
-.nav-btn.active {
-    background: linear-gradient(135deg, var(--primary), #8f94fb);
-    color: white;
-    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
+/* 单个大按钮 */
+button.action-btn { 
+    background-color: var(--primary); color: white; border: none; 
+    padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; 
+    width: 100%; margin-top: 10px; cursor: pointer; transition: 0.2s; 
+}
+button.action-btn:active { transform: scale(0.97); opacity: 0.9; }
+
+/* --- 表单元素 --- */
+input[type="text"], input[type="password"], textarea, select { 
+    width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; 
+    border: 1px solid #d1d1d6; box-sizing: border-box; font-size: 15px; 
+    background-color: #f9f9f9; 
 }
 
-/* 卡片 - 悬浮玻璃感 */
-.card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    backdrop-filter: blur(16px);
-    border-radius: 24px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+/* --- 专项美化 --- */
+#targetWord { 
+    font-size: 40px; color: var(--success); text-align: center; 
+    display: block; margin: 15px 0; letter-spacing: -1px; 
 }
 
-/* 单词显示区 - 重点突出 */
-#targetWord {
-    font-size: 42px !important;
-    text-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
-    color: var(--accent);
-    margin: 20px 0;
+.dashboard {
+    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%) !important;
+    color: white !important; border-radius: 15px !important; padding: 15px !important;
 }
 
-/* 按钮 - 霓虹发光按钮 */
-button.action-btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    padding: 14px;
-    border-radius: 15px;
-    font-weight: 600;
-    transition: all 0.3s;
+.example-box { 
+    background-color: #fff9db; border-left: 4px solid var(--warning); 
+    padding: 12px; margin-top: 15px; border-radius: 8px; font-style: italic; 
 }
 
-button.action-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--accent);
+.article-display { 
+    background-color: #f8f9fa; padding: 15px; border-radius: 12px; 
+    line-height: 1.6; border: 1px solid #eee; 
 }
 
-/* 1247 看板 - 数字化面板 */
-#dailyTaskDashboard {
-    background: linear-gradient(135deg, rgba(78, 84, 200, 0.2), rgba(0, 210, 255, 0.1)) !important;
-    border: 1px solid rgba(0, 210, 255, 0.3) !important;
-    color: #e2e8f0 !important;
+/* --- 聊天气泡 --- */
+.chat-container { 
+    height: 450px; background: #ebedf0; border-radius: 15px; 
+    overflow: hidden; display: flex; flex-direction: column; 
 }
-
-/* 聊天气泡 */
-.bubble-ai {
-    background: rgba(51, 65, 85, 0.8) !important;
-    color: white !important;
-    border: 1px solid var(--border-color);
-}
-
-.bubble-user {
-    background: var(--primary) !important;
-    box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
-}
-
-/* 输入框美化 */
-input, textarea, select {
-    background: rgba(15, 23, 42, 0.5) !important;
-    border: 1px solid var(--border-color) !important;
-    color: white !important;
-    border-radius: 12px !important;
-}
+.chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 15px; }
+.bubble-user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
+.bubble-ai { align-self: flex-start; background: white; color: #1c1c1e; border-bottom-left-radius: 2px; }
