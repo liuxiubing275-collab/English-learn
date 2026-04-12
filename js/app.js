@@ -69,14 +69,36 @@ async function loadAllData() {
     } catch (e) { console.error("数据加载失败", e); }
 }
 
-// ================= [3] 单词核心控制 (解决 restartWords 等报错) =================
+// =========== [3] 单词核心控制 (解决 restartWords 等报错) ===============
 function initGroupSelect() {
     const select = document.getElementById('groupSelect');
-    select.innerHTML = `<option value="all">📚 全部练习 (${wordList.length} 词)</option>`;
+    if (!select) return;
+
+    // 1. 先清空下拉框
+    select.innerHTML = '';
+
+    // 2. 计算总组数（每组10个词）
     const groupCount = Math.ceil(wordList.length / 10);
+
+    // 3. 先循环添加具体的组（第1组，第2组...）
     for (let i = 0; i < groupCount; i++) {
-        select.add(new Option(`📦 第 ${i + 1} 组 (${i*10+1}-${Math.min((i+1)*10, wordList.length)})`, i));
+        const start = i * 10 + 1;
+        const end = Math.min((i + 1) * 10, wordList.length);
+        
+        let option = document.createElement('option');
+        option.value = i;
+        option.text = `📦 第 ${i + 1} 组 (${start} - ${end})`;
+        select.appendChild(option);
     }
+
+    // 4. 最后添加“全部练习”选项
+    let allOption = document.createElement('option');
+    allOption.value = 'all';
+    allOption.text = `📚 全部练习 (共 ${wordList.length} 词)`;
+    select.appendChild(allOption);
+
+    // 5. 默认选中第一组（索引为0），而不是最后一个“全部练习”
+    select.value = 0; 
 }
 
 function getGroupBounds() {
