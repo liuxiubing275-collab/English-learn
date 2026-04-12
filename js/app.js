@@ -722,12 +722,27 @@ async function sendChatMessage() {
 }
 
 // ================= [9] 辅助功能 =================
-function switchTab(t) {
-    document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('page-'+t).classList.add('active');
-    document.getElementById('btn-'+t).classList.add('active');
+function switchTab(tabName) {
+    // 1. 原有的切换板块显示/隐藏逻辑
+    document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+    
+    document.getElementById('page-' + tabName).classList.add('active');
+    document.getElementById('btn-' + tabName).classList.add('active');
+
+    // 2. 【新增逻辑】：控制课本选择栏的显隐
+    const bookSelector = document.getElementById('bookSelectorContainer');
+    if (bookSelector) {
+        if (tabName === 'chat') {
+            // 如果是聊天模式，隐藏选择栏
+            bookSelector.style.display = 'none';
+        } else {
+            // 如果是单词或文章模式，显示选择栏
+            bookSelector.style.display = 'block';
+        }
+    }
 }
+
 function appendChatBubble(t, s) {
     const id = "msg-" + Date.now();
     const div = document.createElement('div');
