@@ -14,6 +14,15 @@ let currentSentenceIdx = 0;
 let sentenceReplayTimer = null;
 let currentChatMode = 'eng';
 let chatHistory = [];
+// 获取上次选择的课本，如果没有则用默认
+let currentBookPath = localStorage.getItem('selected_book_path') || 'default';
+
+// 在 window.onload 中设置下拉框初始值
+const originalOnload = window.onload;
+window.onload = function() {
+    if (originalOnload) originalOnload();
+    document.getElementById('bookSelect').value = currentBookPath;
+};
 
 // ================= [2] 初始化与数据加载 =================
 window.onload = function() {
@@ -37,9 +46,18 @@ window.onload = function() {
 };
 
 async function loadAllData() {
+    // 确定文件路径
+    let wordPath = 'NewWords.txt';
+    let textPath = 'Texts.txt';
+
+    if (currentBookPath !== 'default') {
+        wordPath = `books/${currentBookPath}/NewWords.txt`;
+        textPath = `books/${currentBookPath}/Texts.txt`;
+    }
+
     try {
-        // 加载单词 (3行格式)
-        const wRes = await fetch('NewWords.txt');
+        // 1. 加载单词
+        const wRes = await fetch(wordPath + '?t=' + Date.now()); // 加随机数防止缓存
         if (wRes.ok) {
             const wText = await wRes.text();
             const rawLines = wText.split(/\r?\n/).map(w => w.trim()).filter(w => w.length > 0);
@@ -53,10 +71,14 @@ async function loadAllData() {
                     hook: rawLines[i + 2] || "暂无记忆钩子。"
                 });
             }
-            if (wordList.length > 0) { initGroupSelect(); updateWordDisplay(); }
+            if (wordList.length > 0) {
+                initGroupSelect();
+                updateWordDisplay();
+            }
         }
-        // 加载文章
-        const aRes = await fetch('Texts.txt');
+
+        // 2. 加载文章
+        const aRes = await fetch(textPath + '?t=' + Date.now());
         if (aRes.ok) {
             const aText = await aRes.text();
             const allLines = aText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
@@ -66,7 +88,32 @@ async function loadAllData() {
             }
             if (articleList.length > 0) initArticleSelect();
         }
-    } catch (e) { console.error("数据加载失败", e); }
+        
+        // 3. 刷新看板
+        updateDailyDashboard();
+        
+    } catch (e) {
+        console.error("切换课本失败:", e);
+        alert("无法加载该课本文件，请检查文件夹是否存在。");
+    }
+}
+
+function changeBook() {
+    const select = document.getElementById('bookSelect');
+    currentBookPath = select.value;
+    
+    // 存入本地，下次打开还是这本课本
+    localStorage.setItem('selected_book_path', currentBookPath);
+    
+    // 重置当前单词索引
+    currentWordIndex = 0;
+    
+    // 重新加载数据
+    loadAllData();
+    
+    // 视觉反馈：清空之前的记忆宫殿和 AI 故事区
+    if(document.getElementById('memoryPalaceArea')) document.getElementById('memoryPalaceArea').style.display = 'none';
+    if(document.getElementById('groupStoryArea')) document.getElementById('groupStoryArea').style.display = 'none';
 }
 
 // =========== [3] 单词核心控制 (解决 restartWords 等报错) ===============
