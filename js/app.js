@@ -97,12 +97,14 @@ function updateWordDisplay() {
     document.getElementById('chineseMeaning').style.display = 'none';
 
     const exBox = document.getElementById('exampleSentence');
-    exBox.innerHTML = `<div style="margin-bottom:8px;">${currentWord.ex}</div><div style="color:#8e44ad; font-weight:bold; font-size:14px; border-top:1px dashed #ddd; padding-top:5px;">🏰 ${currentWord.hook}</div>`;
+    exBox.innerHTML = `<div style="color: #34495e; line-height: 1.6;">${currentWord.ex}</div>`;
     exBox.style.display = 'none';
     document.getElementById('wordResult').innerText = "";
     document.getElementById('dictationResult').innerText = "";
     document.getElementById('dictationInput').value = "";
-    document.getElementById('targetWord').style.filter = 'none';
+    if (document.getElementById('dictationGroupMode').style.display === 'none') {
+        document.getElementById('targetWord').style.filter = 'none';
+    }
 }
 
 function changeGroup() { currentWordIndex = getGroupBounds().start; updateWordDisplay(); }
