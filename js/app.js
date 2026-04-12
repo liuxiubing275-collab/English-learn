@@ -34,6 +34,7 @@ window.onload = function() {
         document.getElementById('apiKeyStatus').style.color = "#27ae60";
         document.getElementById('settingsCard').style.display = 'none';
     }
+    switchTab('words'); 
     switchChatMode('eng');
     updateDailyDashboard();
     // 实时更新看板状态
@@ -723,22 +724,35 @@ async function sendChatMessage() {
 
 // ================= [9] 辅助功能 =================
 function switchTab(tabName) {
-    // 1. 原有的切换板块显示/隐藏逻辑
-    document.querySelectorAll('.page-section').forEach(page => page.classList.remove('active'));
+    // 1. 切换页面部分的显示
+    document.querySelectorAll('.page-section').forEach(page => {
+        page.classList.remove('active');
+        // 显式设置 display: none 确保彻底隐藏
+        page.style.display = 'none'; 
+    });
+    
+    // 2. 切换导航按钮高亮
     document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
     
-    document.getElementById('page-' + tabName).classList.add('active');
-    document.getElementById('btn-' + tabName).classList.add('active');
+    // 3. 显示当前选中的页面
+    const activePage = document.getElementById('page-' + tabName);
+    const activeBtn = document.getElementById('btn-' + tabName);
+    
+    if (activePage) {
+        activePage.classList.add('active');
+        activePage.style.display = 'block';
+    }
+    if (activeBtn) activeBtn.classList.add('active');
 
-    // 2. 【新增逻辑】：控制课本选择栏的显隐
+    // 4. 【关键修复】：控制课本选择栏
     const bookSelector = document.getElementById('bookSelectorContainer');
     if (bookSelector) {
+        // 如果进入 chat 板块，强制隐藏；否则显示
         if (tabName === 'chat') {
-            // 如果是聊天模式，隐藏选择栏
-            bookSelector.style.display = 'none';
+            bookSelector.setAttribute('style', 'display: none !important');
         } else {
-            // 如果是单词或文章模式，显示选择栏
-            bookSelector.style.display = 'block';
+            // 恢复原本的样式
+            bookSelector.setAttribute('style', 'margin-bottom: 15px; background: #e3e3e8; border-radius: 12px; padding: 10px; border: none; display: block;');
         }
     }
 }
