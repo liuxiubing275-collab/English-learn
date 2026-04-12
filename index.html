@@ -22,6 +22,11 @@
     <h1>🚀 AI 英语私教</h1>
 
     <div class="nav-bar">
+        <button id="btn-words" class="nav-btn active" onclick="switchTab('words')">单词练习</button>
+        <button id="btn-articles" class="nav-btn" onclick="switchTab('articles')">文章跟读</button>
+        <button id="btn-chat" class="nav-btn" onclick="switchTab('chat')">互动聊天</button>
+    </div>
+
 <!-- ================= 课本选择区 ================= -->
 <div class="card" style="margin-bottom: 15px; background: #e3e3e8; border-radius: 12px; padding: 10px; border: none;">
     <div style="display: flex; align-items: center; gap: 10px;">
@@ -35,10 +40,7 @@
         </select>
     </div>
 </div>
-        <button id="btn-words" class="nav-btn active" onclick="switchTab('words')">单词练习</button>
-        <button id="btn-articles" class="nav-btn" onclick="switchTab('articles')">文章跟读</button>
-        <button id="btn-chat" class="nav-btn" onclick="switchTab('chat')">互动聊天</button>
-    </div>
+
 
     <!-- ================= 页面 1：单词练习 ================= -->
 <div style="width: 100%; height: 6px; background: #eee; border-radius: 3px; margin-bottom: 15px;">
