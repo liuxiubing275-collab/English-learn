@@ -91,17 +91,45 @@ function updateWordDisplay() {
     if (wordList.length === 0) return;
     const bounds = getGroupBounds();
     const currentWord = wordList[currentWordIndex];
+
+    // 1. 更新单词和计数器
     document.getElementById('targetWord').innerText = currentWord.en;
     document.getElementById('wordCounter').innerText = `${currentWordIndex - bounds.start + 1} / ${bounds.total}`;
-    document.getElementById('chineseMeaning').innerText = currentWord.zh;
-    document.getElementById('chineseMeaning').style.display = 'none';
+    
+    // 2. 更新中文释义
+    const chineseEl = document.getElementById('chineseMeaning');
+    chineseEl.innerText = currentWord.zh;
+    chineseEl.style.display = 'none';
 
+    // 3. 【核心修改处】：拆分例句与翻译并换行
     const exBox = document.getElementById('exampleSentence');
-    exBox.innerHTML = `<div style="color: #34495e; line-height: 1.6;">${currentWord.ex}</div>`;
-    exBox.style.display = 'none';
-    document.getElementById('wordResult').innerText = "";
+    let exHtml = "";
+    
+    // 逻辑：寻找“中文：”或“  中文：”作为分隔符
+    if (currentWord.ex.includes("中文：")) {
+        const parts = currentWord.ex.split("中文：");
+        exHtml = `
+            <div style="color: #2c3e50; font-weight: 500; margin-bottom: 8px; line-height: 1.4;">
+                ${parts[0].trim()}
+            </div>
+            <div style="color: #7f8c8d; font-size: 0.95em; border-top: 1px solid #f0f0f0; padding-top: 8px;">
+                <span style="background: #eee; padding: 2px 5px; border-radius: 4px; font-size: 0.8em; margin-right: 5px;">译</span>
+                ${parts[1].trim()}
+            </div>
+        `;
+    } else {
+        exHtml = `<div style="color: #2c3e50;">${currentWord.ex}</div>`;
+    }
+
+    exBox.innerHTML = exHtml;
+    exBox.style.display = 'none'; // 默认隐藏
+
+    // 4. 重置状态
+    document.getElementById('wordResult').innerText = ""; 
     document.getElementById('dictationResult').innerText = "";
     document.getElementById('dictationInput').value = "";
+    
+    // 非测验模式下确保单词清晰
     if (document.getElementById('dictationGroupMode').style.display === 'none') {
         document.getElementById('targetWord').style.filter = 'none';
     }
@@ -132,12 +160,23 @@ function toggleMeaning() {
 }
 
 function showAndPlayExample() {
-    document.getElementById('exampleSentence').style.display = 'block';
-    const enPart = wordList[currentWordIndex].ex.replace(/[^\x00-\xff]/g, '').trim();
-    if (enPart) {
+    const exBox = document.getElementById('exampleSentence');
+    exBox.style.display = 'block'; 
+    
+    const currentWord = wordList[currentWordIndex];
+    
+    // 【优化逻辑】：只提取“中文：”之前的英文部分进行朗读
+    let speechText = currentWord.ex;
+    if (speechText.includes("中文：")) {
+        speechText = speechText.split("中文：")[0];
+    }
+
+    // 过滤掉可能残余的特殊字符，执行朗读
+    const englishOnly = speechText.replace(/[^\x00-\xff]/g, '').trim();
+    if (englishOnly.length > 0) {
         window.speechSynthesis.cancel();
-        activeUtterance = new SpeechSynthesisUtterance(enPart);
-        activeUtterance.lang = 'en-US';
+        activeUtterance = new SpeechSynthesisUtterance(englishOnly);
+        activeUtterance.lang = 'en-US'; 
         window.speechSynthesis.speak(activeUtterance);
     }
 }
