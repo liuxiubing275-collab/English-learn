@@ -873,3 +873,205 @@ function calculateReviewGroups() {
     }
 }
 
+// ======================================================
+// ================= 每日翻译挑战逻辑系统 =================
+// ======================================================
+
+let translationTasks = []; // 存储题目：{cn: "", userEn: "", correctEn: ""}
+let copySentenceQueue = []; // 需要抄写的句子队列
+let currentCopyCount = 0;  // 当前句子的抄写次数进度
+
+// 1. 开始挑战：AI 出题
+async function startTranslationChallenge() {
+    const apiKey = localStorage.getItem('silicon_api_key');
+    if (!apiKey) return alert("请先在设置中保存 API Key");
+
+    // 获取当前组单词作为出题参考
+    const bounds = getGroupBounds();
+    let words = [];
+    for (let i = bounds.start; i <= bounds.end; i++) {
+        if (wordList[i]) words.push(wordList[i].en);
+    }
+
+    // UI 切换到加载状态
+    document.getElementById('transSetup').style.display = 'none';
+    document.getElementById('transWorking').style.display = 'block';
+    const qBox = document.getElementById('transQuestions');
+    qBox.innerHTML = "<p style='text-align:center; color:#8e44ad;'>正在联络 AI 老师针对你的单词进度出题...</p>";
+
+    const prompt = `你是一位英语老师。请根据以下 10 个单词：[${words.join(", ")}]，编写 3 个简单的日常中文句子要求用户翻译成英文。
+    要求：
+    1. 句子要生活化。
+    2. 必须包含列表中的单词含义。
+    3. 格式严格如下（每行一句）：
+    1. [中文句子1]
+    2. [中文句子2]
+    3. [中文句子3]`;
+
+    try {
+        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'Qwen/Qwen2.5-7B-Instruct',
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.7
+            })
+        });
+        const data = await response.json();
+        const content = data.choices[0].message.content;
+        
+        // 解析题目
+        const lines = content.match(/\[(.*?)\]/g) || [];
+        if (lines.length < 3) throw new Error("解析失败");
+
+        translationTasks = lines.map(l => ({ 
+            cn: l.replace(/[\[\]]/g, ''), 
+            userEn: '', 
+            correctEn: '' 
+        }));
+
+        qBox.innerHTML = translationTasks.map((t, i) => `
+            <div style="margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
+                <p><b>句 ${i+1}:</b> ${t.cn}</p>
+                <input type="text" class="trans-user-input" data-idx="${i}" placeholder="请翻译成英文...">
+            </div>
+        `).join('');
+
+    } catch (e) {
+        alert("出题失败，请重试");
+        document.getElementById('transSetup').style.display = 'block';
+        document.getElementById('transWorking').style.display = 'none';
+    }
+}
+
+// 2. AI 批改：并排对比
+async function gradeTranslations() {
+    const apiKey = localStorage.getItem('silicon_api_key');
+    const inputs = document.querySelectorAll('.trans-user-input');
+    inputs.forEach(input => {
+        const idx = input.getAttribute('data-idx');
+        translationTasks[idx].userEn = input.value.trim();
+    });
+
+    const btn = document.getElementById('btnSubmitTrans');
+    btn.innerText = "⏳ AI 正在深度批改并给出地道答案...";
+    btn.disabled = true;
+
+    const prompt = `你是一位英语私教。请批改以下翻译并给出最地道的答案。
+    ${translationTasks.map((t, i) => `题${i+1} 中文：${t.cn} 用户翻译：${t.userEn}`).join('\n')}
+    
+    输出要求：只输出地道答案，不要解释，每句一行，放在方括号中。格式如下：
+    1. [正确答案1]
+    2. [正确答案2]
+    3. [正确答案3]`;
+
+    try {
+        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'Qwen/Qwen2.5-7B-Instruct',
+                messages: [{ role: "user", content: prompt }]
+            })
+        });
+        const data = await response.json();
+        const corrects = data.choices[0].message.content.match(/\[(.*?)\]/g) || [];
+
+        // 3. 构建对比界面
+        const resBox = document.getElementById('transResult');
+        const compareArea = document.getElementById('transComparisonArea');
+        resBox.style.display = 'block';
+        
+        let html = '<h3 style="margin-top:0; color:#e67e22;">对照批改结果：</h3>';
+        copySentenceQueue = []; // 初始化抄写队列
+
+        translationTasks.forEach((t, i) => {
+            const correctText = (corrects[i] || "[Correct sentence]").replace(/[\[\]]/g, '');
+            t.correctEn = correctText;
+            copySentenceQueue.push(correctText); // 加入抄写任务
+
+            html += `
+                <div style="display:flex; gap:10px; margin-bottom:15px; border:1px solid #eee; padding:10px; border-radius:10px; background:white;">
+                    <div style="flex:1; color:#e74c3c; border-right:1px solid #eee; padding-right:5px;">
+                        <small style="color:#999">你的翻译:</small><br>${t.userEn || "(未输入)"}
+                    </div>
+                    <div style="flex:1; color:#27ae60;">
+                        <small style="color:#999">地道参考:</small><br><b>${correctText}</b>
+                    </div>
+                </div>
+            `;
+        });
+
+        compareArea.innerHTML = html;
+        document.getElementById('transWorking').style.display = 'none';
+        btn.disabled = false;
+        btn.innerText = "✅ 提交 AI 批改";
+
+        // 4. 进入抄写环节
+        startCopyExercise();
+
+    } catch (e) {
+        alert("批改失败");
+        btn.disabled = false;
+    }
+}
+
+// 4. 抄写练习逻辑
+function startCopyExercise() {
+    if (copySentenceQueue.length === 0) return;
+    
+    currentCopyCount = 0;
+    document.getElementById('copyExerciseArea').style.display = 'block';
+    updateCopyDisplay();
+    
+    // 自动滚动到抄写区
+    document.getElementById('copyExerciseArea').scrollIntoView({ behavior: 'smooth' });
+}
+
+function updateCopyDisplay() {
+    const target = copySentenceQueue[0];
+    const sentenceNum = 3 - copySentenceQueue.length + 1;
+    document.getElementById('copyTargetBox').innerText = target;
+    document.getElementById('copyProgressText').innerText = `第 ${sentenceNum}/3 句 | 抄写进度：${currentCopyCount} / 5`;
+    document.getElementById('copyInput').value = "";
+    document.getElementById('copyInput').focus();
+}
+
+function handleCopyInput() {
+    const inputEl = document.getElementById('copyInput');
+    const inputVal = inputEl.value.trim();
+    const targetVal = copySentenceQueue[0].trim();
+
+    // 科学校验：忽略最后的标点符号和大小写
+    const cleanInput = inputVal.replace(/[.,!?'"]/g, '').toLowerCase();
+    const cleanTarget = targetVal.replace(/[.,!?'"]/g, '').toLowerCase();
+
+    if (cleanInput === cleanTarget) {
+        currentCopyCount++;
+        if (currentCopyCount >= 5) {
+            // 当前句子完成
+            copySentenceQueue.shift();
+            if (copySentenceQueue.length > 0) {
+                alert("非常好！下一句。");
+                currentCopyCount = 0;
+                updateCopyDisplay();
+            } else {
+                // 全部 3 句完成
+                alert("🎉 太棒了！今日 3 句地道表达已深度肌肉记忆！");
+                resetTranslationSection();
+            }
+        } else {
+            updateCopyDisplay();
+        }
+    } else {
+        alert("拼写有误，请仔细对照上方绿色文字抄写哦！");
+        inputEl.select(); // 选中错误的文字方便修改
+    }
+}
+
+function resetTranslationSection() {
+    document.getElementById('copyExerciseArea').style.display = 'none';
+    document.getElementById('transResult').style.display = 'none';
+    document.getElementById('transSetup').style.display = 'block';
+}

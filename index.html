@@ -190,6 +190,41 @@
         </div>
     </div>
 
+<!-- ================= 翻译挑战卡片 (新增) ================= -->
+<div class="card" style="border: 2px solid #27ae60; margin-top: 20px;">
+    <h2>🏆 每日 3 句翻译挑战 (中译英)</h2>
+    
+    <!-- 1. 初始状态：开始按钮 -->
+    <div id="transSetup">
+        <button class="action-btn" onclick="startTranslationChallenge()" style="background-color: #27ae60;">🚀 开始今日 3 句挑战</button>
+        <p style="font-size: 12px; color: #7f8c8d; text-align: center; margin-top: 8px;">AI 会根据你当前练习的单词为你精准出题</p>
+    </div>
+
+    <!-- 2. 做题状态：显示中文并输入英文 -->
+    <div id="transWorking" style="display: none;">
+        <div id="transQuestions"></div>
+        <button class="action-btn" id="btnSubmitTrans" onclick="gradeTranslations()" style="background-color: #2980b9; margin-top: 15px;">✅ 提交 AI 批改</button>
+    </div>
+
+    <!-- 3. 批改结果：并排对比展示 -->
+    <div id="transResult" style="display: none; margin-top: 15px;">
+        <div id="transComparisonArea" style="background: #fdfaf6; padding: 10px; border-radius: 12px;"></div>
+    </div>
+
+    <!-- 4. 抄写练习区 (核心功能) -->
+    <div id="copyExerciseArea" style="display: none; margin-top: 20px; padding: 15px; border: 2px dashed #27ae60; border-radius: 12px; background: #f0fff4;">
+        <h3 style="color: #27ae60; margin-top: 0;">✍️ 刻意练习：正确版本抄写 5 遍</h3>
+        <p style="font-size: 14px; color: #666; margin-bottom: 5px;">请准确抄写以下句子（忽略标点差异）：</p>
+        <div id="copyTargetBox" style="font-weight: bold; font-size: 18px; color: #2c3e50; margin-bottom: 15px; padding: 10px; background: white; border-radius: 8px; border-left: 5px solid #27ae60;"></div>
+        
+        <div style="display: flex; gap: 10px;">
+            <input type="text" id="copyInput" placeholder="在此开始抄写..." autocomplete="off" onkeypress="if(event.key === 'Enter') handleCopyInput()" style="margin-top:0;">
+            <button onclick="handleCopyInput()" style="width: 80px; background: #27ae60; color:white; border:none; border-radius:10px; font-weight:bold;">发送</button>
+        </div>
+        <div id="copyProgressText" style="margin-top: 12px; font-weight: bold; color: #27ae60; text-align: center; font-size: 16px;">进度：0 / 5</div>
+    </div>
+</div>
+
     <!-- ================= 页面 3：互动聊天 ================= -->
     <div id="page-chat" class="page-section">
         <div style="text-align: right; margin-bottom: -10px; padding-right: 5px;">
