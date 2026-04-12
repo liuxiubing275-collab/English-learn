@@ -1,91 +1,109 @@
 :root {
-    --primary-color: #5856d6;
-    --bg-color: #f2f2f7;
-    --card-bg: #ffffff;
-    --text-main: #1c1c1e;
-    --text-sub: #8e8e93;
-    --accent-yellow: #ffcc00;
-    --accent-green: #34c759;
+    --primary: #4e54c8;
+    --accent: #00d2ff;
+    --bg-dark: #0f172a; /* 深蓝黑背景 */
+    --card-bg: rgba(30, 41, 59, 0.7); /* 半透明卡片 */
+    --text-white: #f8fafc;
+    --border-color: rgba(255, 255, 255, 0.1);
 }
 
-body { 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    margin: 0; padding: 15px; background-color: var(--bg-color); color: var(--text-main); 
-    line-height: 1.6;
+body {
+    background: radial-gradient(circle at top right, #1e1b4b, var(--bg-dark)); /* 渐变背景 */
+    color: var(--text-white);
+    font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    margin: 0; padding: 15px;
+    min-height: 100vh;
 }
 
-h1 { 
-    text-align: left; font-size: 28px; font-weight: 800; color: var(--text-main); 
-    margin: 20px 0 20px 10px; letter-spacing: -0.5px;
-}
-
-/* 导航栏美化 - 毛玻璃效果 */
-.nav-bar { 
-    display: flex; background: rgba(255, 255, 255, 0.7); 
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border-radius: 14px; padding: 4px; margin-bottom: 25px; 
-    position: sticky; top: 10px; z-index: 100;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-}
-
-.nav-btn { 
-    flex: 1; background: transparent; color: var(--text-sub); border: none; 
-    padding: 12px 0; border-radius: 10px; font-size: 15px; font-weight: 600; 
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-}
-
-.nav-btn.active { 
-    background: white; color: var(--primary-color); 
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08); 
-}
-
-/* 卡片美化 */
-.card { 
-    background: var(--card-bg); padding: 24px; border-radius: 20px; 
-    margin-bottom: 20px; border: none;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.04);
-    transition: transform 0.2s ease;
-}
-
-h2 { font-size: 19px; margin-top: 0; font-weight: 700; color: #000; }
-
-/* 按钮美化 */
-button.action-btn { 
-    background: var(--primary-color); color: white; border: none; 
-    padding: 16px; border-radius: 14px; font-size: 16px; font-weight: 700; 
-    width: 100%; margin-top: 12px; cursor: pointer;
-    box-shadow: 0 4px 12px rgba(88, 86, 214, 0.2);
-    transition: all 0.2s ease;
-}
-
-button.action-btn:active { transform: scale(0.97); opacity: 0.9; }
-
-/* 单词练习特化显示 */
-#targetWord { 
-    font-size: 48px !important; letter-spacing: -1px; 
-    background: linear-gradient(135deg, #5856d6, #007aff);
+h1 {
+    font-size: 24px; text-align: center;
+    background: linear-gradient(to right, #818cf8, #22d3ee);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    margin-bottom: 25px;
 }
 
-/* 1247 看板美化 */
-.dashboard {
-    background: linear-gradient(135deg, #1e1e1e, #3a3a3c) !important;
-    border-radius: 18px !important; padding: 20px !important;
+/* 导航栏 - 科技感胶囊 */
+.nav-bar {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid var(--border-color);
+    border-radius: 50px;
+    padding: 5px;
+    margin-bottom: 25px;
+    backdrop-filter: blur(10px);
 }
 
-/* 聊天气泡美化 */
-.chat-bubble { 
-    max-width: 85%; padding: 14px 18px; border-radius: 18px; font-size: 16px; 
-    box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+.nav-btn {
+    color: #94a3b8;
+    border-radius: 50px;
+    padding: 12px 0;
+    font-weight: bold;
 }
 
-.bubble-user { 
-    background: var(--primary-color) !important; 
-    border-bottom-right-radius: 4px !important;
+.nav-btn.active {
+    background: linear-gradient(135deg, var(--primary), #8f94fb);
+    color: white;
+    box-shadow: 0 4px 15px rgba(78, 84, 200, 0.4);
 }
 
-.bubble-ai { 
-    background: white !important; color: #1c1c1e !important;
-    border-bottom-left-radius: 4px !important;
+/* 卡片 - 悬浮玻璃感 */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* 单词显示区 - 重点突出 */
+#targetWord {
+    font-size: 42px !important;
+    text-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+    color: var(--accent);
+    margin: 20px 0;
+}
+
+/* 按钮 - 霓虹发光按钮 */
+button.action-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    padding: 14px;
+    border-radius: 15px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+button.action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--accent);
+}
+
+/* 1247 看板 - 数字化面板 */
+#dailyTaskDashboard {
+    background: linear-gradient(135deg, rgba(78, 84, 200, 0.2), rgba(0, 210, 255, 0.1)) !important;
+    border: 1px solid rgba(0, 210, 255, 0.3) !important;
+    color: #e2e8f0 !important;
+}
+
+/* 聊天气泡 */
+.bubble-ai {
+    background: rgba(51, 65, 85, 0.8) !important;
+    color: white !important;
+    border: 1px solid var(--border-color);
+}
+
+.bubble-user {
+    background: var(--primary) !important;
+    box-shadow: 0 4px 12px rgba(78, 84, 200, 0.3);
+}
+
+/* 输入框美化 */
+input, textarea, select {
+    background: rgba(15, 23, 42, 0.5) !important;
+    border: 1px solid var(--border-color) !important;
+    color: white !important;
+    border-radius: 12px !important;
 }
