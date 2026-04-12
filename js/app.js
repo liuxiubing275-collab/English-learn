@@ -1,31 +1,21 @@
 /**
- * AI 英语私教 - 核心功能逻辑
+ * AI 英语私教 - 终极功能整合版
+ * 包含：基础控制、单词练习、拼写测验、1247看板、AI故事、记忆宫殿、文章听写、AI对话
  */
 
-// ================= 全局变量 =================
-let activeUtterance = null; 
-let wordList = [{ en: "Apple", zh: "苹果(示例)", ex: "An apple a day." }]; 
-let currentWordIndex = 0; 
-let articleList = ["Please create Texts.txt file to load articles."];
-let currentArticleText = ""; 
-let articleSentences = []; 
-let currentSentenceIdx = 0; 
+// ================= [1] 全局变量 =================
+let activeUtterance = null;
+let wordList = [];
+let currentWordIndex = 0;
+let articleList = [];
+let currentArticleText = "";
+let articleSentences = [];
+let currentSentenceIdx = 0;
 let sentenceReplayTimer = null;
-let currentChatMode = 'eng'; // 'eng' 英文私教, 'chn' 中文助手
+let currentChatMode = 'eng';
 let chatHistory = [];
 
-// AI Chat Prompts
-const promptEng = `你是一位友好的英语母语者，正在和用户进行轻松的日常聊天。
-【首要任务】：用自然、地道的英语回答问题，推进对话。
-【纠错规则】：只有当用户的英语出现明显的语法或拼写错误时，你才纠错。没有明显错误，**绝对不要**纠错。
-如果有错误，**必须**将中文纠错内容放在 <纠错> 和 </纠错> 标签之间，且放在回复最前。`;
-
-const promptChn = `你是一个聪明、友善的AI助手。
-请完全使用自然、流利的**中文**回答用户的所有问题。
-不论用户问什么，你都直接用纯中文给予有用的帮助，态度亲切，就像朋友聊天一样。`;
-
-// ================= 生命周期与初始化 =================
-
+// ================= [2] 初始化与数据加载 =================
 window.onload = function() {
     loadAllData();
     const savedKey = localStorage.getItem('silicon_api_key');
@@ -33,15 +23,11 @@ window.onload = function() {
         document.getElementById('siliconApiKey').value = savedKey;
         document.getElementById('apiKeyStatus').innerText = "✅ API Key 已读取";
         document.getElementById('apiKeyStatus').style.color = "#27ae60";
-        document.getElementById('settingsCard').style.display = 'none'; 
+        document.getElementById('settingsCard').style.display = 'none';
     }
-    // 初始化聊天模式为英文
     switchChatMode('eng');
-    
-    // 初始化看板
     updateDailyDashboard();
-    
-    // 实时更新看板上显示的当前组号
+    // 实时更新看板状态
     setInterval(() => {
         const val = document.getElementById('groupSelect').value;
         const gNum = val === 'all' ? '全' : parseInt(val) + 1;
@@ -50,51 +36,208 @@ window.onload = function() {
     }, 500);
 };
 
-// ================= 1. 数据加载 =================
-
 async function loadAllData() {
-    // 加载单词库
     try {
+        // 加载单词 (3行格式)
         const wRes = await fetch('NewWords.txt');
         if (wRes.ok) {
             const wText = await wRes.text();
-            const rawLines = wText.split(/\r?\n/).map(w => w.trim()).filter(w => w.length > 0);  
+            const rawLines = wText.split(/\r?\n/).map(w => w.trim()).filter(w => w.length > 0);
             wordList = [];
-            for (let i = 0; i < rawLines.length; i += 2) {
-                const wordLine = rawLines[i];
-                const sentenceLine = (i + 1 < rawLines.length) ? rawLines[i+1] : "暂无例句。";
-                const parts = wordLine.split(/\||:|：/);
-                wordList.push({ 
-                    en: parts[0].trim(), 
-                    zh: parts.length > 1 ? parts[1].trim() : "暂无中文释义", 
-                    ex: sentenceLine 
+            for (let i = 0; i < rawLines.length; i += 3) {
+                const parts = rawLines[i].split(/\||:|：/);
+                wordList.push({
+                    en: parts[0].trim(),
+                    zh: parts.length > 1 ? parts[1].trim() : "暂无释义",
+                    ex: rawLines[i + 1] || "暂无例句。",
+                    hook: rawLines[i + 2] || "暂无记忆钩子。"
                 });
             }
+            if (wordList.length > 0) { initGroupSelect(); updateWordDisplay(); }
         }
-    } catch (e) { console.log("单词库未找到"); }
-    if (wordList.length > 0) { initGroupSelect(); updateWordDisplay(); }
-
-    // 加载文章库
-    try {
+        // 加载文章
         const aRes = await fetch('Texts.txt');
         if (aRes.ok) {
             const aText = await aRes.text();
             const allLines = aText.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
             articleList = [];
             for (let i = 0; i < allLines.length; i += 2) {
-                articleList.push({
-                    en: allLines[i],
-                    zh: allLines[i + 1] || "" 
-                });
+                articleList.push({ en: allLines[i], zh: allLines[i+1] || "" });
             }
+            if (articleList.length > 0) initArticleSelect();
         }
-    } catch (e) { console.log("文章库未找到"); }
-    if (articleList.length > 0) { initArticleSelect(); }
+    } catch (e) { console.error("数据加载失败", e); }
 }
 
-// ================= 2. 自动化看板 (方案一) =================
+// ================= [3] 单词核心控制 (解决 restartWords 等报错) =================
+function initGroupSelect() {
+    const select = document.getElementById('groupSelect');
+    select.innerHTML = `<option value="all">📚 全部练习 (${wordList.length} 词)</option>`;
+    const groupCount = Math.ceil(wordList.length / 10);
+    for (let i = 0; i < groupCount; i++) {
+        select.add(new Option(`📦 第 ${i + 1} 组 (${i*10+1}-${Math.min((i+1)*10, wordList.length)})`, i));
+    }
+}
 
-// 辅助函数：获取本地日期的 YYYY-MM-DD 字符串（解决时区问题）
+function getGroupBounds() {
+    const val = document.getElementById('groupSelect').value;
+    if (val === 'all') return { start: 0, end: wordList.length - 1, total: wordList.length };
+    const start = parseInt(val) * 10;
+    const end = Math.min(start + 9, wordList.length - 1);
+    return { start, end, total: end - start + 1 };
+}
+
+function updateWordDisplay() {
+    if (wordList.length === 0) return;
+    const bounds = getGroupBounds();
+    const currentWord = wordList[currentWordIndex];
+    document.getElementById('targetWord').innerText = currentWord.en;
+    document.getElementById('wordCounter').innerText = `${currentWordIndex - bounds.start + 1} / ${bounds.total}`;
+    document.getElementById('chineseMeaning').innerText = currentWord.zh;
+    document.getElementById('chineseMeaning').style.display = 'none';
+
+    const exBox = document.getElementById('exampleSentence');
+    exBox.innerHTML = `<div style="margin-bottom:8px;">${currentWord.ex}</div><div style="color:#8e44ad; font-weight:bold; font-size:14px; border-top:1px dashed #ddd; padding-top:5px;">🏰 ${currentWord.hook}</div>`;
+    exBox.style.display = 'none';
+    document.getElementById('wordResult').innerText = "";
+    document.getElementById('dictationResult').innerText = "";
+    document.getElementById('dictationInput').value = "";
+    document.getElementById('targetWord').style.filter = 'none';
+}
+
+function changeGroup() { currentWordIndex = getGroupBounds().start; updateWordDisplay(); }
+
+function nextWord() {
+    const bounds = getGroupBounds();
+    currentWordIndex++;
+    if (currentWordIndex > bounds.end) currentWordIndex = bounds.start;
+    updateWordDisplay();
+}
+
+function restartWords() { // <-- 修复报错
+    currentWordIndex = getGroupBounds().start;
+    updateWordDisplay();
+}
+
+function toggleBlur() { 
+    const el = document.getElementById('targetWord');
+    el.style.filter = el.style.filter === 'blur(8px)' ? 'none' : 'blur(8px)';
+}
+
+function toggleMeaning() { 
+    const el = document.getElementById('chineseMeaning');
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+function showAndPlayExample() {
+    document.getElementById('exampleSentence').style.display = 'block';
+    const enPart = wordList[currentWordIndex].ex.replace(/[^\x00-\xff]/g, '').trim();
+    if (enPart) {
+        window.speechSynthesis.cancel();
+        activeUtterance = new SpeechSynthesisUtterance(enPart);
+        activeUtterance.lang = 'en-US';
+        window.speechSynthesis.speak(activeUtterance);
+    }
+}
+
+function readTargetWord() {
+    // 1. 先停止之前的播放
+    window.speechSynthesis.cancel();
+    
+    // 2. 【核心修复】：强制去掉模糊效果
+    // 这样即使单词之前因为 toggleBlur 变模糊了，点播放时也会瞬间变清晰
+    const wordEl = document.getElementById('targetWord');
+    if (wordEl) {
+        wordEl.style.filter = 'none';
+    }
+
+    // 3. 执行朗读
+    if (wordList[currentWordIndex]) {
+        activeUtterance = new SpeechSynthesisUtterance(wordList[currentWordIndex].en);
+        activeUtterance.lang = 'en-US';
+        window.speechSynthesis.speak(activeUtterance);
+    }
+}
+
+function startListeningForWord() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return alert("请使用 Safari 或 Chrome。");
+    const rec = new SR(); rec.lang = 'en-US';
+    const resEl = document.getElementById('wordResult');
+    resEl.innerText = "正在聆听..."; rec.start();
+    rec.onresult = (e) => {
+        const spoken = e.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, '').trim();
+        const target = wordList[currentWordIndex].en.toLowerCase().trim();
+        if (spoken === target) { resEl.style.color="#27ae60"; resEl.innerHTML=`✅ 完美: "${spoken}"`; }
+        else { resEl.style.color="#e74c3c"; resEl.innerHTML=`❌ 差一点: "${spoken}"`; }
+    };
+}
+
+function checkDictation() {
+    const input = document.getElementById('dictationInput').value.toLowerCase().trim();
+    const target = wordList[currentWordIndex].en.toLowerCase().trim();
+    const resEl = document.getElementById('dictationResult');
+    if (!input) return;
+    if (input === target) {
+        resEl.style.color="#27ae60"; resEl.innerText="✅ 正确！";
+        document.getElementById('targetWord').style.filter="none";
+        setTimeout(nextWord, 1500);
+    } else { resEl.style.color="#e74c3c"; resEl.innerText="❌ 错误。"; }
+}
+
+// ================= [4] 单词组测验逻辑 =================
+let groupTestAnswers = [];
+let groupTestCurrentIndex = 0;
+let groupTestBounds = null;
+
+function startGroupTest() {
+    groupTestBounds = getGroupBounds(); groupTestAnswers = []; groupTestCurrentIndex = 0;
+    document.getElementById('dictationSingleMode').style.display = 'none';
+    document.getElementById('dictationGroupMode').style.display = 'block';
+    document.getElementById('dictationResultMode').style.display = 'none';
+    playTestWord();
+}
+
+function playTestWord() {
+    const word = wordList[groupTestBounds.start + groupTestCurrentIndex].en;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(word); u.lang = 'en-US';
+    window.speechSynthesis.speak(u);
+    document.getElementById('groupTestProgress').innerText = `测验中: ${groupTestCurrentIndex+1} / ${groupTestBounds.total}`;
+    setTimeout(()=>document.getElementById('groupTestInput').focus(), 200);
+}
+
+function submitTestWord() {
+    const val = document.getElementById('groupTestInput').value.trim();
+    groupTestAnswers.push(val);
+    document.getElementById('groupTestInput').value = "";
+    groupTestCurrentIndex++;
+    if (groupTestCurrentIndex < groupTestBounds.total) playTestWord();
+    else showGroupTestResult();
+}
+
+function showGroupTestResult() {
+    document.getElementById('dictationGroupMode').style.display = 'none';
+    document.getElementById('dictationResultMode').style.display = 'block';
+    let correct = 0; let html = "";
+    for (let i=0; i<groupTestBounds.total; i++) {
+        const target = wordList[groupTestBounds.start + i];
+        const isOk = groupTestAnswers[i].toLowerCase() === target.en.toLowerCase();
+        if (isOk) correct++;
+        html += `<li class="${isOk?'correct-item':'incorrect-item'}"><b>${target.en}</b>: ${isOk?'✅':'❌ 你写了: '+groupTestAnswers[i]}<br><small>${target.zh}</small></li>`;
+    }
+    document.getElementById('groupTestScore').innerText = `正确率: ${Math.round(correct/groupTestBounds.total*100)}%`;
+    document.getElementById('groupTestResultList').innerHTML = html;
+}
+
+function quitGroupTest() {
+    document.getElementById('dictationGroupMode').style.display = 'none';
+    document.getElementById('dictationResultMode').style.display = 'none';
+    document.getElementById('dictationSingleMode').style.display = 'block';
+    document.getElementById('targetWord').style.filter = 'none';
+}
+
+// ================= [5] 1247 看板逻辑 =================
 function getLocalDateString(date) {
     let y = date.getFullYear();
     let m = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -102,663 +245,459 @@ function getLocalDateString(date) {
     return `${y}-${m}-${d}`;
 }
 
-// 1. 修复后的标记函数
 function markCurrentGroupFinished() {
     const val = document.getElementById('groupSelect').value;
-    if (val === 'all') { alert("请先选择一个具体的组号进行学习。"); return; }
-    
+    if (val === 'all') return alert("请选择具体组。");
     const currentGNum = parseInt(val) + 1;
-    const today = new Date();
-    // 强制清除时分秒
-    today.setHours(0, 0, 0, 0);
-
+    const today = new Date(); today.setHours(0,0,0,0);
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
-    
     for (let i = 1; i <= currentGNum; i++) {
-        let targetDate = new Date(today); // 基于本地今天
-
-        if (i === currentGNum) {
-            // 今天完成
-        } else if (i === currentGNum - 1) {
-            targetDate.setDate(today.getDate() - 1); // 确保是本地时间的昨天
-        } else if (i === currentGNum - 3) {
-            targetDate.setDate(today.getDate() - 3); // 3天前
-        } else if (i === currentGNum - 6) {
-            targetDate.setDate(today.getDate() - 6); // 6天前
-        } else {
-            targetDate.setDate(today.getDate() - 20); // 很久以前
-        }
-        
-        // 使用本地日期格式存储
-        history[i] = getLocalDateString(targetDate);
+        let target = new Date(today);
+        if (i === currentGNum) {} 
+        else if (i === currentGNum - 1) target.setDate(today.getDate() - 1);
+        else if (i === currentGNum - 3) target.setDate(today.getDate() - 3);
+        else if (i === currentGNum - 6) target.setDate(today.getDate() - 6);
+        else target.setDate(today.getDate() - 20);
+        history[i] = getLocalDateString(target);
     }
-
     localStorage.setItem('eng_study_history', JSON.stringify(history));
-    alert(`🎉 记录成功！第 ${currentGNum} 组已学完。\n第 1、4、6 组已进入今日复习清单。`);
+    alert("🎉 记录成功！复习清单已更新。");
     updateDailyDashboard();
 }
 
-// 2. 修复后的看板显示函数
 function updateDailyDashboard() {
     const dashboard = document.getElementById('taskList');
-    const dateSpan = document.getElementById('todayDate');
     if (!dashboard) return;
-
-    // 获取本地今天
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    dateSpan.innerText = getLocalDateString(today);
-
+    const today = new Date(); today.setHours(0,0,0,0);
+    document.getElementById('todayDate').innerText = getLocalDateString(today);
     let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
     let tasks = [];
-    
-    // 1. 计算最大组号（建议新课）
-    let maxGroup = 0;
-    Object.keys(history).forEach(g => { if (parseInt(g) > maxGroup) maxGroup = parseInt(g); });
-    tasks.push(`🆕 <b>新课建议：</b> 开始第 <a href="#" onclick="jumpToGroup(${maxGroup})" style="color: #f1c40f; font-weight: bold; text-decoration: underline;">${maxGroup + 1}</a> 组`);
-
-    // 2. 计算复习任务
-    let reviewLinks = [];
-    for (let gNum in history) {
-        // 解析存储的日期字符串
-        const dateParts = history[gNum].split('-');
-        const studyDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
-        studyDate.setHours(0, 0, 0, 0);
-
-        // 计算天数差
-        const diffTime = today.getTime() - studyDate.getTime();
-        const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-
-        // 调试用：console.log(`组${gNum} 的差值是: ${diffDays}`);
-
-        if (diffDays === 1 || diffDays === 3 || diffDays === 6) {
-            reviewLinks.push(`<a href="#" onclick="jumpToGroup(${gNum-1})" style="color: #f1c40f; font-weight: bold; text-decoration: underline; margin-right:10px;">第 ${gNum} 组</a>`);
-        }
+    let maxG = 0; Object.keys(history).forEach(g => { if(parseInt(g)>maxG) maxG=parseInt(g); });
+    tasks.push(`🆕 <b>新课：</b> 第 <a href="#" onclick="jumpToGroup(${maxG})" style="color:#f1c40f; font-weight:bold;">${maxG+1}</a> 组`);
+    let review = [];
+    for (let g in history) {
+        const parts = history[g].split('-');
+        const d = new Date(parts[0], parts[1]-1, parts[2]);
+        const diff = Math.round((today.getTime() - d.getTime()) / 86400000);
+        if ([1, 3, 6].includes(diff)) review.push(`<a href="#" onclick="jumpToGroup(${g-1})" style="color:#f1c40f; font-weight:bold; margin-right:8px;">第 ${g} 组</a>`);
     }
-
-    if (reviewLinks.length > 0) {
-        // 对显示的组号进行排序（从大到小显示，视觉更清晰）
-        reviewLinks.reverse(); 
-        tasks.push(`<br>🔄 <b>今日必复习：</b> ${reviewLinks.join('')}`);
-    } else {
-        tasks.push(`<br>✅ 今日暂无旧课复习任务，请专注新课！`);
-    }
-
+    if (review.length) tasks.push(`<br>🔄 <b>必复习：</b> ${review.reverse().join('')}`);
     dashboard.innerHTML = tasks.join('');
 }
 
-// ================= 3. AI 故事生成 (方案三) =================
+function jumpToGroup(idx) { document.getElementById('groupSelect').value = idx; changeGroup(); }
 
+// ================= [6] AI 故事与宫殿生成 =================
 async function generateRevisionStory() {
     const apiKey = localStorage.getItem('silicon_api_key');
-    if (!apiKey) { alert("请先在‘互动聊天’版块设置并保存 API Key"); return; }
-
-    let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
-    const todayObj = new Date();
-    let selectedWords = [];
-
-    for (let gNum in history) {
-        const studyDate = new Date(history[gNum]);
-        const diffDays = Math.ceil(Math.abs(todayObj - studyDate) / (1000 * 60 * 60 * 24)) - 1;
-        if (diffDays === 1 || diffDays === 3 || diffDays === 6) {
-            let start = (parseInt(gNum) - 1) * 10;
-            let end = Math.min(start + 9, wordList.length - 1);
-            for (let i = start; i <= end; i++) {
-                if (wordList[i]) selectedWords.push(wordList[i].en);
-            }
-        }
-    }
-
-    if (selectedWords.length === 0) {
-        alert("今日没有到期的复习单词。建议你先学习新课并点击‘标记完成’。");
+    if (!apiKey) return alert("请保存 Key");
+    const bounds = getGroupBounds();
+    let words = []; for(let i=bounds.start; i<=bounds.end; i++) if(wordList[i]) words.push(wordList[i].en);
+    const btn = document.getElementById('btnGenStory');
+    const box = document.getElementById('aiStoryContent');
+    btn.innerText = "⏳ AI 创作中..."; box.style.display="block"; box.innerText="正在构思故事...";
+    const prompt = `用这些单词写一段励志短文并加粗，末尾附翻译：[${words.join(", ")}]`;
+    try {
+        const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: [{role:"user", content:prompt}] })
+        });
+        const data = await res.json();
+        const content = data.choices[0].message.content;
+        box.innerHTML = content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        document.getElementById('btnShadowStory').style.display = 'block';
+        btn.innerText = "重新生成故事";
+    } catch (e) { box.innerText = "失败"; btn.innerText = "重试"; }
+}
+// ================= 快速提取全组预存记忆宫殿 (唯一保留版本) =================
+function generateGroupMemoryPalace() {
+    const bounds = getGroupBounds();
+    if (wordList.length === 0) {
+        alert("词库尚未加载，请稍后再试。");
         return;
     }
 
-    const btn = document.getElementById('btnGenStory');
-    const contentBox = document.getElementById('aiStoryContent');
-    btn.innerText = "⏳ AI 正在构思故事并翻译...";
-    btn.disabled = true;
-    contentBox.style.display = 'block';
-    contentBox.innerText = "正在通过词汇 [ " + selectedWords.join(", ") + " ] 编写情境故事...";
+    const palaceArea = document.getElementById('memoryPalaceArea');
+    const palaceContent = document.getElementById('palaceContent');
+    
+    if (!palaceArea || !palaceContent) {
+        alert("页面缺少显示区域（memoryPalaceArea）");
+        return;
+    }
 
-    const prompt = `你是一位英语教育专家。请使用以下单词编写一段连贯、地道的英语短文（约150词）：[${selectedWords.join(", ")}]。必须包含所有单词，加粗显示，并附带中文翻译。`;
+    let htmlContent = "";
+    let foundCount = 0;
 
-    try {
-        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                model: 'Qwen/Qwen2.5-7B-Instruct',
-                messages: [{ role: "user", content: prompt }],
-                temperature: 0.7
-            })
-        });
+    for (let i = bounds.start; i <= bounds.end; i++) {
+        const wordObj = wordList[i];
+        if (wordObj) {
+            foundCount++;
+            // 直接读取你在 loadAllData 时存入 wordObj.hook 的内容
+            const hookText = wordObj.hook || "（该词暂无预存钩子）";
+            
+            htmlContent += `
+                <div style="margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px dashed #eee;">
+                    <strong style="color: #d35400;">${foundCount}. ${wordObj.en}</strong> 
+                    <span style="color: #7f8c8d; font-size: 0.9em;">[${wordObj.zh}]</span>
+                    <div style="margin-top: 4px; color: #333; line-height: 1.5;">
+                        ${hookText.replace('[💡记忆宫殿', '<b style="color:#2980b9;">[💡记忆宫殿</b>')}
+                    </div>
+                </div>
+            `;
+        }
+    }
 
-        const data = await response.json();
-        const fullResult = data.choices[0].message.content;
-        contentBox.innerHTML = fullResult.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e67e22;">$1</strong>');
-        document.getElementById('btnShadowStory').style.display = 'block';
-        btn.innerText = "🪄 重新生成 AI 故事";
-        btn.disabled = false;
-    } catch (error) {
-        console.error(error);
-        alert("生成失败");
-        btn.innerText = "🪄 重新生成 AI 故事";
-        btn.disabled = false;
+    if (foundCount > 0) {
+        palaceArea.style.display = 'block';
+        palaceContent.innerHTML = htmlContent;
+        palaceArea.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        alert("当前选中的组没有找到单词。");
     }
 }
 
 function transferStoryToArticle() {
-    const aiContent = document.getElementById('aiStoryContent').innerText;
-    if (!aiContent) return;
-    const parts = aiContent.split('---');
-    const englishText = parts[0].trim();
-    const chineseText = parts.length > 1 ? parts[1].trim() : "";
-    currentArticleText = englishText;
+    const text = document.getElementById('aiStoryContent').innerText;
+    const parts = text.split('---');
+    currentArticleText = parts[0].trim();
     switchTab('articles');
-    const articleDisplay = document.getElementById('articleDisplay');
-    articleDisplay.innerHTML = `
-        <div style="border-left: 4px solid #8e44ad; padding-left: 10px; background: #fdf6ff;">
-            <p style="color: #8e44ad; font-weight: bold;">✨ AI 复习专题故事：</p>
-            <p>${englishText}</p>
-            <p style="color: #7f8c8d; font-size: 14px;">${chineseText}</p>
-        </div>
-    `;
+    document.getElementById('articleDisplay').innerHTML = `<div style="border-left:4px solid #8e44ad; padding-left:10px;"><b>AI故事：</b><br>${parts[0]}<hr><small>${parts[1]||""}</small></div>`;
     quitArticleDictation();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ================= 4. 单词核心逻辑 =================
-
-function initGroupSelect() {
-    const select = document.getElementById('groupSelect'); 
-    select.innerHTML = `<option value="all">📚 整体练习 (共 ${wordList.length} 词)</option>`;
-    const groupCount = Math.ceil(wordList.length / 10);
-    for (let i = 0; i < groupCount; i++) {
-        const start = i * 10 + 1; 
-        const end = Math.min((i + 1) * 10, wordList.length);
-        let option = document.createElement('option'); 
-        option.value = i; 
-        option.text = `📦 第 ${i + 1} 组 (词汇 ${start} - ${end})`;
-        select.appendChild(option);
-    }
-}
-
-function getGroupBounds() {
-    const val = document.getElementById('groupSelect').value;
-    if (val === 'all') return { start: 0, end: wordList.length - 1, total: wordList.length };
-    const start = parseInt(val) * 10; 
-    return { start, end: Math.min(start + 9, wordList.length - 1), total: Math.min(start + 9, wordList.length - 1) - start + 1 };
-}
-
-function changeGroup() { currentWordIndex = getGroupBounds().start; updateWordDisplay(); }
-
-function updateWordDisplay() {
-    if(wordList.length === 0) return;
-    const bounds = getGroupBounds();
-    document.getElementById('targetWord').innerText = wordList[currentWordIndex].en;
-    document.getElementById('wordCounter').innerText = `${currentWordIndex - bounds.start + 1} / ${bounds.total}`;
-    document.getElementById('chineseMeaning').style.display = 'none'; 
-    document.getElementById('chineseMeaning').innerText = wordList[currentWordIndex].zh;
-    document.getElementById('exampleSentence').style.display = 'none'; 
-    document.getElementById('exampleSentence').innerText = wordList[currentWordIndex].ex;
-    document.getElementById('wordResult').innerText = ""; 
-    document.getElementById('dictationInput').value = ""; 
-    document.getElementById('dictationResult').innerText = "";
-    document.getElementById('targetWord').style.filter = 'none';
-}
-
-function toggleMeaning() { 
-    const el = document.getElementById('chineseMeaning'); 
-    el.style.display = el.style.display === 'none' ? 'block' : 'none'; 
-}
-
-function showAndPlayExample() {
-    document.getElementById('exampleSentence').style.display = 'block'; 
-    const fullSentence = wordList[currentWordIndex].ex;
-    if (fullSentence !== "暂无例句。") {
-        const englishPart = fullSentence.replace(/[^\x00-\xff]/g, '').trim();
-        if (englishPart.length > 0) {
-            activeUtterance = new SpeechSynthesisUtterance(englishPart);
-            activeUtterance.lang = 'en-US'; window.speechSynthesis.speak(activeUtterance);
-        }
-    }
-}
-
-function nextWord() { 
-    if (wordList.length === 0) return; 
-    const bounds = getGroupBounds(); 
-    currentWordIndex++; 
-    if (currentWordIndex > bounds.end) currentWordIndex = bounds.start; 
-    updateWordDisplay(); 
-}
-
-function restartWords() { 
-    if (wordList.length === 0) return; 
-    currentWordIndex = getGroupBounds().start; 
-    updateWordDisplay(); 
-}
-
-function toggleBlur() { 
-    const wordEl = document.getElementById('targetWord'); 
-    wordEl.style.filter = wordEl.style.filter === 'blur(8px)' ? 'none' : 'blur(8px)'; 
-}
-
-function readTargetWord() {
-    document.getElementById('targetWord').style.filter = 'blur(8px)';
-    activeUtterance = new SpeechSynthesisUtterance(wordList[currentWordIndex].en); 
-    activeUtterance.lang = 'en-US'; 
-    window.speechSynthesis.speak(activeUtterance);
-    setTimeout(() => { document.getElementById('dictationInput').focus(); }, 100);
-}
-
-// 语音跟读识别
-function startListeningForWord() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
-    if (!SpeechRecognition) return alert("请在 Safari 或 Chrome 中使用。");
-    const recognition = new SpeechRecognition(); 
-    recognition.lang = 'en-US'; 
-    document.getElementById('wordResult').innerText = "正在聆听..."; 
-    recognition.start();
-    recognition.onresult = function(event) {
-        const transcript = event.results[0][0].transcript.toLowerCase().replace(/[.,!?]/g, '').trim(); 
-        const target = wordList[currentWordIndex].en.toLowerCase().trim(); 
-        const resultEl = document.getElementById('wordResult');
-        if (transcript === target) { 
-            resultEl.style.color = "#27ae60"; resultEl.innerHTML = `✅ 完美！读作: "${transcript}"`; 
-        } else { 
-            resultEl.style.color = "#e74c3c"; resultEl.innerHTML = `❌ 差一点: "${transcript}"`; 
-        }
-    };
-}
-
-// 单词拼写检查
-function checkDictation() {
-    const userInput = document.getElementById('dictationInput').value.toLowerCase().trim(); 
-    const targetWord = wordList[currentWordIndex].en.toLowerCase().trim(); 
-    const resultEl = document.getElementById('dictationResult');
-    if (userInput === "") return resultEl.innerText = "⚠️ 请输入单词！";
-    if (userInput === targetWord) { 
-        resultEl.style.color = "#27ae60"; resultEl.innerHTML = `✅ 完全正确！`; 
-        document.getElementById('targetWord').style.filter = 'none'; 
-        setTimeout(() => { nextWord(); }, 1500); 
-    } else { 
-        resultEl.style.color = "#e74c3c"; resultEl.innerHTML = `❌ 拼写错误。`; 
-    }
-}
-
-// ================= 5. 单词组测验逻辑 =================
-
-let groupTestBounds = null; let groupTestAnswers = []; let groupTestCurrentIndex = 0;
-
-function startGroupTest() {
-    if (wordList.length === 0) return;
-    groupTestBounds = getGroupBounds(); groupTestAnswers = []; groupTestCurrentIndex = 0;
-    document.getElementById('dictationSingleMode').style.display = 'none'; 
-    document.getElementById('dictationResultMode').style.display = 'none'; 
-    document.getElementById('dictationGroupMode').style.display = 'block';
-    document.getElementById('groupTestInput').value = ''; 
-    document.getElementById('groupTestProgress').innerText = `📝 第 ${groupTestCurrentIndex + 1} 词 / 共 ${groupTestBounds.total}`;
-    document.getElementById('targetWord').style.filter = 'blur(8px)'; 
-    setTimeout(() => { playTestWord(); }, 600);
-}
-
-function playTestWord() { 
-    activeUtterance = new SpeechSynthesisUtterance(wordList[groupTestBounds.start + groupTestCurrentIndex].en); 
-    activeUtterance.lang = 'en-US'; window.speechSynthesis.speak(activeUtterance); 
-    setTimeout(() => { document.getElementById('groupTestInput').focus(); }, 100); 
-}
-
-function submitTestWord() {
-    const inputEl = document.getElementById('groupTestInput'); 
-    groupTestAnswers.push(inputEl.value.trim()); 
-    inputEl.value = ''; 
-    groupTestCurrentIndex++;
-    if (groupTestCurrentIndex < groupTestBounds.total) { 
-        document.getElementById('groupTestProgress').innerText = `📝 第 ${groupTestCurrentIndex + 1} 词 / 共 ${groupTestBounds.total}`; 
-        setTimeout(() => { playTestWord(); }, 400); 
-    } else { 
-        showGroupTestResult(); 
-    }
-}
-
-function showGroupTestResult() {
-    document.getElementById('dictationGroupMode').style.display = 'none'; 
-    document.getElementById('dictationResultMode').style.display = 'block'; 
-    let correctCount = 0; let htmlList = '';
-    for (let i = 0; i < groupTestBounds.total; i++) {
-        let absIndex = groupTestBounds.start + i; 
-        let targetWord = wordList[absIndex].en; 
-        let userAnswer = groupTestAnswers[i] || ""; 
-        let isCorrect = (targetWord.toLowerCase().trim() === userAnswer.toLowerCase());
-        if (isCorrect) { 
-            correctCount++; 
-            htmlList += `<li class="correct-item"><strong>${targetWord}</strong> ✅</li>`; 
-        } else { 
-            htmlList += `<li class="incorrect-item"><s>${userAnswer || "(空)"}</s> -> <strong>${targetWord}</strong></li>`; 
-        }
-    }
-    let accuracy = Math.round((correctCount / groupTestBounds.total) * 100);
-    document.getElementById('groupTestScore').innerHTML = `正确率: ${accuracy}%`;
-    document.getElementById('groupTestResultList').innerHTML = htmlList;
-}
-
-function quitGroupTest() { 
-    document.getElementById('dictationGroupMode').style.display = 'none'; 
-    document.getElementById('dictationResultMode').style.display = 'none'; 
-    document.getElementById('dictationSingleMode').style.display = 'block'; 
-    document.getElementById('targetWord').style.filter = 'none'; 
-}
-
-// ================= 6. 1247 复习逻辑 =================
-
-function calculateReviewGroups() {
-    const inputVal = document.getElementById('currentGroupInput').value;
-    if (!inputVal) { alert("请输入当前组号"); return; }
-    const N = parseInt(inputVal);
-    const reviewOffsets = [1, 3, 6]; 
-    const resultArea = document.getElementById('reviewResultArea');
-    const linksSpan = document.getElementById('reviewLinks');
-    let reviewGroups = [];
-    reviewOffsets.forEach(offset => {
-        let target = N - offset;
-        if (target >= 1) reviewGroups.push(target);
-    });
-    if (reviewGroups.length === 0) {
-        linksSpan.innerHTML = "暂无复习任务。";
-    } else {
-        linksSpan.innerHTML = "";
-        reviewGroups.forEach(gNum => {
-            const link = document.createElement('a'); link.href = "#"; link.innerText = `第 ${gNum} 组 `;
-            link.style = "color: #007aff; margin-right: 10px; cursor: pointer; font-weight: bold;";
-            link.onclick = (e) => { e.preventDefault(); jumpToGroup(gNum - 1); };
-            linksSpan.appendChild(link);
-        });
-    }
-    resultArea.style.display = 'block';
-    document.getElementById('aiStoryArea').style.display = 'block';
-}
-
-function jumpToGroup(index) {
-    const select = document.getElementById('groupSelect');
-    if (index >= 0 && index < select.options.length - 1) {
-        select.value = index; changeGroup();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-}
-
-// ================= 7. 文章跟读逻辑 =================
-
-function initArticleSelect() { 
-    const startSel = document.getElementById('articleStartSelect'); 
-    const endSel = document.getElementById('articleEndSelect'); 
-    startSel.innerHTML = ''; endSel.innerHTML = '';
-    articleList.forEach((_, index) => { 
-        startSel.add(new Option(`第 ${index + 1} 段`, index));
-        endSel.add(new Option(`第 ${index + 1} 段`, index));
-    });
-    startSel.value = 0; endSel.value = 0; changeArticleRange();
-}
-
-function changeArticleRange() { 
-    let startIdx = parseInt(document.getElementById('articleStartSelect').value); 
-    let endIdx = parseInt(document.getElementById('articleEndSelect').value);
-    if (endIdx < startIdx) { endIdx = startIdx; document.getElementById('articleEndSelect').value = endIdx; }
-    let selectedItems = articleList.slice(startIdx, endIdx + 1);
-    let htmlContent = "";
-    selectedItems.forEach(item => {
-        htmlContent += `<div style="margin-bottom: 15px;"><div>${item.en}</div><div style="color: #7f8c8d; font-size: 14px;">${item.zh}</div></div>`;
-    });
-    document.getElementById('articleDisplay').innerHTML = htmlContent;
-    currentArticleText = selectedItems.map(item => item.en).join(' ');
-    document.getElementById('diffResult').style.display = 'none'; 
-    quitArticleDictation(); 
-}
-
-function nextArticleRange() {
-    let startIdx = parseInt(document.getElementById('articleStartSelect').value); 
-    let endIdx = parseInt(document.getElementById('articleEndSelect').value);
-    let span = endIdx - startIdx + 1; 
-    let nextStart = startIdx + span; 
-    if (nextStart >= articleList.length) nextStart = 0;
-    document.getElementById('articleStartSelect').value = nextStart;
-    document.getElementById('articleEndSelect').value = Math.min(nextStart + span - 1, articleList.length - 1);
+// ================= [7] 文章练习逻辑 (含翻页、听写) =================
+function initArticleSelect() {
+    const s = document.getElementById('articleStartSelect');
+    const e = document.getElementById('articleEndSelect');
+    s.innerHTML = ''; e.innerHTML = '';
+    articleList.forEach((_, i) => { s.add(new Option(`第 ${i+1} 段`, i)); e.add(new Option(`第 ${i+1} 段`, i)); });
     changeArticleRange();
 }
 
-function speakArticle() { 
+function changeArticleRange() {
+    const startSel = document.getElementById('articleStartSelect');
+    const endSel = document.getElementById('articleEndSelect');
+    
+    let startIdx = parseInt(startSel.value);
+    let endIdx = parseInt(endSel.value);
+
+    // 【修复逻辑】如果起始段落选得比结束段落还晚，强制同步
+    if (startIdx > endIdx) {
+        endIdx = startIdx;
+        endSel.value = endIdx;
+    }
+
+    const selected = articleList.slice(startIdx, endIdx + 1);
+    
+    // 如果没有数据，显示提示
+    if (selected.length === 0) {
+        document.getElementById('articleDisplay').innerHTML = "未选中有效段落";
+        return;
+    }
+
+    document.getElementById('articleDisplay').innerHTML = selected.map(item => 
+        `<div style="margin-bottom:12px;">${item.en}<br><small style="color:#7f8c8d">${item.zh}</small></div>`
+    ).join('');
+
+    // 更新当前练习的纯英文文本
+    currentArticleText = selected.map(item => item.en).join(' ');
+    
+    // 重置比对结果和听写状态
+    document.getElementById('diffResult').style.display = 'none';
+    quitArticleDictation();
+}
+
+function nextArticleRange() {
+    const s = document.getElementById('articleStartSelect');
+    const e = document.getElementById('articleEndSelect');
+    let span = parseInt(e.value) - parseInt(s.value) + 1;
+    let nextS = parseInt(s.value) + span;
+    if (nextS >= articleList.length) nextS = 0;
+    s.value = nextS; e.value = Math.min(nextS + span - 1, articleList.length - 1);
+    changeArticleRange();
+}
+
+function speakArticle() {
     window.speechSynthesis.cancel();
-    activeUtterance = new SpeechSynthesisUtterance(currentArticleText); 
-    activeUtterance.lang = 'en-US'; 
-    activeUtterance.rate = parseFloat(document.getElementById('speedSelect').value); 
-    window.speechSynthesis.speak(activeUtterance); 
+    const u = new SpeechSynthesisUtterance(currentArticleText);
+    u.lang = 'en-US'; u.rate = parseFloat(document.getElementById('speedSelect').value);
+    window.speechSynthesis.speak(u);
 }
 
 function startListeningForArticle() {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
-    if (!SpeechRecognition) return alert("不支持语音。");
-    const recognition = new SpeechRecognition(); recognition.lang = 'en-US'; 
-    document.getElementById('diffResult').style.display = 'block';
-    document.getElementById('diffContent').innerHTML = "🎤 正在聆听..."; 
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) return alert("您的浏览器不支持语音识别");
+
+    const recognition = new SR();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+
+    const box = document.getElementById('diffResult');
+    const con = document.getElementById('diffContent');
+
+    box.style.display = 'block';
+    box.style.borderColor = '#e67e22'; // 橙色表示正在听
+    con.innerHTML = "🎤 <strong>请开始朗读...</strong>";
+
     recognition.start();
-    recognition.onresult = function(event) { 
-        const spoken = event.results[0][0].transcript;
-        const diffHTML = compareSentences(currentArticleText, spoken); 
-        document.getElementById('diffContent').innerHTML = `<b>听到了:</b> "${spoken}"<br><b>比对:</b> ${diffHTML}`; 
+
+    recognition.onresult = (e) => {
+        const spoken = e.results[0][0].transcript;
+        
+        // 【核心修改】：调用比对算法
+        const diffHTML = compareSentences(currentArticleText, spoken);
+        
+        box.style.borderColor = '#27ae60'; // 识别成功变绿
+        con.innerHTML = `
+            <div style="margin-bottom: 10px; color: #7f8c8d; font-size: 14px; border-bottom: 1px dashed #eee; padding-bottom:5px;">
+                <b>AI 听到的内容：</b><br>"${spoken}"
+            </div>
+            <div style="line-height: 1.8;">
+                <b>比对结果（绿色为准确，红色为错漏）：</b><br>${diffHTML}
+            </div>
+        `;
+    };
+
+    recognition.onerror = () => {
+        box.style.borderColor = '#e74c3c';
+        con.innerHTML = "⚠️ 没听清，请点击按钮重试。";
     };
 }
 
 function compareSentences(original, spoken) {
-    let origWords = original.replace(/[.,!?'"]/g, '').toLowerCase().split(/\s+/); 
-    let spokenWords = spoken.replace(/[.,!?'"]/g, '').toLowerCase().split(/\s+/); 
-    let resultHTML = []; let spokenIdx = 0; 
-    origWords.forEach(word => {
+    // 清洗文本：转小写，去掉标点
+    let origWords = original.replace(/[.,!?'"]/g, '').toLowerCase().split(/\s+/);
+    let spokenWords = spoken.replace(/[.,!?'"]/g, '').toLowerCase().split(/\s+/);
+    let originalRawWords = original.split(/\s+/); // 保留带标点的原词用于展示
+    
+    let resultHTML = [];
+    let spokenIdx = 0;
+
+    for (let i = 0; i < origWords.length; i++) {
+        if (!origWords[i]) continue;
+        
         let found = false;
-        for(let j = spokenIdx; j < Math.min(spokenIdx + 3, spokenWords.length); j++) { 
-            if (word === spokenWords[j]) { found = true; spokenIdx = j + 1; break; } 
+        // 在说话内容中向后搜索3个词，防止漏读一个词导致全盘变红
+        for (let j = spokenIdx; j < Math.min(spokenIdx + 3, spokenWords.length); j++) {
+            if (origWords[i] === spokenWords[j]) {
+                found = true;
+                spokenIdx = j + 1;
+                break;
+            }
         }
-        resultHTML.push(found ? `<span style="color: #27ae60;">${word} </span>` : `<span style="color: #e74c3c; text-decoration: line-through;">${word} </span>`);
-    }); 
-    return resultHTML.join('');
+
+        if (found) {
+            resultHTML.push(`<span style="color: #27ae60; font-weight: bold;">${originalRawWords[i]}</span>`);
+        } else {
+            resultHTML.push(`<span style="color: #e74c3c; text-decoration: line-through;">${originalRawWords[i]}</span>`);
+        }
+    }
+    return resultHTML.join(' ');
 }
 
-// ================= 8. 文章精听听写 =================
-
+// 逐句听写 (黄金10秒)
 function startArticleDictation() {
     articleSentences = currentArticleText.match(/[^.!?\n]+[.!?\n]+/g) || [currentArticleText];
-    articleSentences = articleSentences.map(s => s.trim()).filter(s => s.length > 0); 
+    articleSentences = articleSentences.map(s => s.trim()).filter(s => s.length > 0);
     currentSentenceIdx = 0;
-    document.getElementById('articleDictationSetup').style.display = 'none'; 
-    document.getElementById('articleDictationRunning').style.display = 'block'; 
+    document.getElementById('articleDictationSetup').style.display = 'none';
+    document.getElementById('articleDictationRunning').style.display = 'block';
     document.getElementById('articleDisplay').style.filter = 'blur(8px)';
     updateArticleDictProgress(); playCurrentSentence();
 }
 
-function updateArticleDictProgress() { 
-    document.getElementById('articleDictProgress').innerText = `正在听写: ${currentSentenceIdx + 1} / ${articleSentences.length}`; 
+function updateArticleDictProgress() {
+    document.getElementById('articleDictProgress').innerText = `听写中: ${currentSentenceIdx+1} / ${articleSentences.length}`;
 }
 
 function playCurrentSentence() {
     clearTimeout(sentenceReplayTimer); window.speechSynthesis.cancel();
-    const sentence = articleSentences[currentSentenceIdx];
-    const utterance = new SpeechSynthesisUtterance(sentence); utterance.lang = 'en-US';
-    utterance.onend = () => {
-        sentenceReplayTimer = setTimeout(() => { window.speechSynthesis.speak(utterance); }, 10000); 
+    const s = articleSentences[currentSentenceIdx];
+    const hint = document.getElementById('timerHint');
+    hint.innerText = "🔊 第一遍播放...";
+    const u = new SpeechSynthesisUtterance(s); u.lang = 'en-US';
+    u.onend = () => {
+        hint.innerText = "⏳ 10秒后重播...";
+        sentenceReplayTimer = setTimeout(() => {
+            hint.innerText = "🔊 第二遍播放...";
+            window.speechSynthesis.speak(u);
+        }, 10000);
     };
-    window.speechSynthesis.speak(utterance);
+    window.speechSynthesis.speak(u);
+    setTimeout(()=>document.getElementById('articleDictInput').focus(), 200);
 }
 
 function checkArticleDictation() {
-    const userInput = document.getElementById('articleDictInput').value.trim();
+    clearTimeout(sentenceReplayTimer); window.speechSynthesis.cancel();
+    const ans = articleSentences[currentSentenceIdx];
+    const input = document.getElementById('articleDictInput').value.trim();
     const res = document.getElementById('articleDictResult');
     res.style.display = 'block';
-    res.innerHTML = `你写了: ${userInput}<br>答案: <b>${articleSentences[currentSentenceIdx]}</b>`;
+    res.innerHTML = `你写了: ${input}<br>正确答案: <b>${ans}</b>`;
     document.getElementById('btnNextSentence').style.display = 'block';
 }
 
 function nextDictationSentence() {
     currentSentenceIdx++;
-    if (currentSentenceIdx >= articleSentences.length) { 
-        alert("完成！"); quitArticleDictation(); 
-    } else {
+    if (currentSentenceIdx >= articleSentences.length) { alert("🎉 全部完成！"); quitArticleDictation(); }
+    else {
         document.getElementById('articleDictResult').style.display = 'none';
         document.getElementById('btnNextSentence').style.display = 'none';
-        document.getElementById('articleDictInput').value = '';
+        document.getElementById('articleDictInput').value = "";
         updateArticleDictProgress(); playCurrentSentence();
     }
 }
 
 function quitArticleDictation() {
     clearTimeout(sentenceReplayTimer); window.speechSynthesis.cancel();
-    const running = document.getElementById('articleDictationRunning');
-    if(running) running.style.display = 'none';
-    const setup = document.getElementById('articleDictationSetup');
-    if(setup) setup.style.display = 'block';
+    document.getElementById('articleDictationRunning').style.display = 'none';
+    document.getElementById('articleDictationSetup').style.display = 'block';
     document.getElementById('articleDisplay').style.filter = 'none';
 }
 
-// ================= 9. AI 聊天功能 =================
-
+// ================= [8] AI 对话 =================
 function switchChatMode(mode) {
     currentChatMode = mode;
-    document.getElementById('modeBtnEng').classList.toggle('active', mode === 'eng');
-    document.getElementById('modeBtnChn').classList.toggle('active', mode === 'chn');
-    chatHistory = [{ role: "system", content: mode === 'eng' ? promptEng : promptChn }];
-    const chatLog = document.getElementById('chatLog'); chatLog.innerHTML = '';
-    appendChatBubble(mode === 'eng' ? "Hi! I'm your AI English coach." : "你好！我是你的中文助手。", 'ai');
+    document.getElementById('modeBtnEng').classList.toggle('active', mode==='eng');
+    document.getElementById('modeBtnChn').classList.toggle('active', mode==='chn');
+    document.getElementById('chatLog').innerHTML = `<div class="chat-bubble bubble-ai">${mode==='eng'?'Hi! I am your English teacher.':'你好！有什么我可以帮你的？'}</div>`;
+    chatHistory = [{role:"system", content: mode==='eng'?'You are a friendly English teacher. Correct grammar only if it is a major mistake using <纠错>标签.':'你是全能中文助手。'}];
 }
 
-async function sendChatMessage(overrideText = null) {
-    const inputEl = document.getElementById('chatMsgInput');
-    const userText = overrideText || inputEl.value.trim();
-    if (!userText) return;
-    const apiKey = localStorage.getItem('silicon_api_key');
-    if (!apiKey) { alert("请配置 API Key"); return; }
-
-    appendChatBubble(userText, 'user');
-    inputEl.value = ''; chatHistory.push({ role: "user", content: userText });
-    const loadingId = appendChatBubble("⏳ Thinking...", 'ai');
-
+async function sendChatMessage() {
+    const input = document.getElementById('chatMsgInput');
+    const txt = input.value.trim(); if(!txt) return;
+    const key = localStorage.getItem('silicon_api_key');
+    if(!key) return alert("请存 Key");
+    appendChatBubble(txt, 'user');
+    input.value = ""; chatHistory.push({role:"user", content:txt});
+    const loadingId = appendChatBubble("⏳ ...", 'ai');
     try {
-        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+        const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: chatHistory })
+            headers: {'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json'},
+            body: JSON.stringify({model:'Qwen/Qwen2.5-7B-Instruct', messages: chatHistory})
         });
-        const data = await response.json();
-        const aiRawText = data.choices[0].message.content;
-        chatHistory.push({ role: "assistant", content: aiRawText });
-        renderAndSpeakAiResponse(aiRawText, loadingId);
-    } catch (e) { updateChatBubble(loadingId, "Error."); }
+        const data = await res.json();
+        const aiTxt = data.choices[0].message.content;
+        chatHistory.push({role:"assistant", content:aiTxt});
+        updateChatBubble(loadingId, aiTxt);
+    } catch(e) { updateChatBubble(loadingId, "Error"); }
 }
 
-function renderAndSpeakAiResponse(rawText, bubbleId) {
-    let correctionText = ""; let replyText = rawText;
-    if (currentChatMode === 'eng') {
-        const match = rawText.match(/<纠错>([\s\S]*?)<\/纠错>/);
-        if (match) { correctionText = match[1]; replyText = rawText.replace(/<纠错>[\s\S]*?<\/纠错>/, ''); }
-    }
-    const safeText = encodeURIComponent(replyText.replace(/[\u4e00-\u9fa5]/g, ''));
-    let html = correctionText ? `<div class="chat-correction">${correctionText}</div>` : "";
-    html += `<div class="chat-reply">${replyText} <button class="btn-play-reply" data-text="${safeText}" onclick="playAiSpeech(this)">🔊</button></div>`;
-    updateChatBubble(bubbleId, html);
-    window.playAiSpeech({ getAttribute: () => safeText });
-}
-
-function startChatVoice() {
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (!SR) return alert("不支持语音。");
-    const rec = new SR(); rec.lang = currentChatMode === 'eng' ? 'en-US' : 'zh-CN';
-    rec.start();
-    rec.onresult = (e) => { sendChatMessage(e.results[0][0].transcript); };
-}
-
-function saveApiKey() {
-    const key = document.getElementById('siliconApiKey').value.trim();
-    if (key.startsWith("sk-")) {
-        localStorage.setItem('silicon_api_key', key);
-        document.getElementById('apiKeyStatus').innerText = "✅ 已保存";
-        setTimeout(() => { toggleSettings(); }, 600);
-    }
-}
-
-function playAiSpeech(btn) {
-    const text = decodeURIComponent(typeof btn === 'string' ? btn : btn.getAttribute('data-text'));
-    window.speechSynthesis.cancel();
-    const utt = new SpeechSynthesisUtterance(text);
-    utt.lang = currentChatMode === 'eng' ? 'en-US' : 'zh-CN';
-    window.speechSynthesis.speak(utt);
-}
-
-function appendChatBubble(text, sender) {
-    const chatLog = document.getElementById('chatLog'); const id = "msg-" + Date.now();
-    const div = document.createElement('div'); div.className = `chat-bubble bubble-${sender}`; div.id = id; div.innerHTML = text; 
-    chatLog.appendChild(div); chatLog.scrollTop = chatLog.scrollHeight; return id;
-}
-
-function updateChatBubble(id, html) {
-    const div = document.getElementById(id); if (div) div.innerHTML = html;
-}
-
-function switchTab(tab) {
+// ================= [9] 辅助功能 =================
+function switchTab(t) {
     document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('page-' + tab).classList.add('active');
-    document.getElementById('btn-' + tab).classList.add('active');
+    document.getElementById('page-'+t).classList.add('active');
+    document.getElementById('btn-'+t).classList.add('active');
 }
-
-function toggleSettings() {
+function appendChatBubble(t, s) {
+    const id = "msg-" + Date.now();
+    const div = document.createElement('div');
+    div.className = `chat-bubble bubble-${s}`; div.id = id; div.innerText = t;
+    document.getElementById('chatLog').appendChild(div);
+    return id;
+}
+function updateChatBubble(id, t) { document.getElementById(id).innerText = t; }
+function toggleSettings() { 
     const s = document.getElementById('settingsCard');
     s.style.display = s.style.display === 'none' ? 'block' : 'none';
 }
+function saveApiKey() {
+    const k = document.getElementById('siliconApiKey').value.trim();
+    localStorage.setItem('silicon_api_key', k); alert("保存成功"); toggleSettings();
+}
 
-// ================= 10 词智能成文逻辑 =================
+// ================= [10] AI 聊天语音识别 (补全功能) =================
+
+function startChatVoice() {
+    // 1. 检查浏览器兼容性
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+        return alert("您的浏览器不支持语音识别，请在 iPhone Safari 或 Chrome 浏览器中使用。");
+    }
+
+    const recognition = new SpeechRecognition();
+    
+    // 2. 根据当前模式自动切换识别语言
+    // 如果是英语私教模式，听英文；如果是中文助手模式，听中文
+    recognition.lang = (currentChatMode === 'eng') ? 'en-US' : 'zh-CN';
+    
+    const inputEl = document.getElementById('chatMsgInput');
+    const originalPlaceholder = inputEl.placeholder;
+    
+    // 3. 开始录音时的 UI 反馈
+    inputEl.placeholder = "🎤 正在聆听，请说话...";
+    recognition.start();
+
+    // 4. 识别成功处理
+    recognition.onresult = function(event) {
+        const transcript = event.results[0][0].transcript;
+        inputEl.value = transcript; // 将识别出的文字填入输入框
+        inputEl.placeholder = originalPlaceholder;
+        
+        // 自动触发发送逻辑
+        sendChatMessage();
+    };
+
+    // 5. 错误处理
+    recognition.onerror = function(event) {
+        console.error("语音识别错误:", event.error);
+        inputEl.placeholder = "⚠️ 没听清，请重试...";
+        setTimeout(() => {
+            inputEl.placeholder = originalPlaceholder;
+        }, 2000);
+    };
+
+    // 6. 结束录音
+    recognition.onend = function() {
+        if (inputEl.placeholder.includes("正在聆听")) {
+            inputEl.placeholder = originalPlaceholder;
+        }
+    };
+}
+
+// ================= [补全功能] 11词成文逻辑 =================
 
 async function generateGroupStory() {
+    // 1. 获取 API Key
     const apiKey = localStorage.getItem('silicon_api_key');
     if (!apiKey) {
         alert("请先在‘互动聊天’版块设置并保存 API Key！");
         return;
     }
 
-    // 1. 获取当前组的 10 个单词
+    // 2. 获取当前组单词
     const bounds = getGroupBounds();
-    const currentWords = [];
+    let currentWords = [];
     for (let i = bounds.start; i <= bounds.end; i++) {
-        if (wordList[i]) {
+        if (wordList[i] && wordList[i].en) {
             currentWords.push(wordList[i].en);
         }
     }
 
     if (currentWords.length === 0) {
-        alert("当前组没有单词，无法生成故事。");
+        alert("当前组没有单词，请先选择一个单词组。");
         return;
     }
 
-    // 2. UI 反馈
+    // 3. UI 状态
     const storyArea = document.getElementById('groupStoryArea');
     const storyContent = document.getElementById('groupStoryContent');
+    if (!storyArea) {
+        alert("HTML中缺少 id='groupStoryArea' 的显示区域");
+        return;
+    }
+
     storyArea.style.display = 'block';
-    storyContent.innerText = `正在为这 10 个单词构思情境：\n[ ${currentWords.join(", ")} ] ...`;
-    
-    // 自动滚动到显示区域
+    storyContent.innerText = "正在构思故事...";
     storyArea.scrollIntoView({ behavior: 'smooth' });
 
-    // 3. 构建 Prompt
-    const prompt = `你是一位专业的英语老师。请使用以下 10 个单词编写一段连贯、有逻辑且地道的英语短文（约 100-150 词）：
-    单词列表：[${currentWords.join(", ")}]。
-    
-    要求：
-    1. 故事内容要有趣、生活化或励志。
-    2. 必须包含所有这 10 个单词，并在文中将这些单词用 **粗体** 标注。
-    3. 在短文下方提供准确的中文对照翻译。
-    
-    格式如下：
-    (英文短文内容)
-    ---
-    (中文翻译内容)`;
+    // 4. 发送 API 请求
+    const prompt = `使用以下 10 个单词编写一段连贯的英语短文（约 100 词），单词需加粗。结尾附带中文翻译，中间用 --- 分隔：[${currentWords.join(", ")}]`;
 
-    // 4. 调用 AI 接口
     try {
         const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
             method: 'POST',
@@ -767,24 +706,19 @@ async function generateGroupStory() {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'Qwen/Qwen2.5-7B-Instruct', // 使用 Qwen 模型
-                messages: [
-                    { role: "system", content: "你是一个擅长情境化教学的英语助教。" },
-                    { role: "user", content: prompt }
-                ],
+                model: 'Qwen/Qwen2.5-7B-Instruct',
+                messages: [{ role: "user", content: prompt }],
                 temperature: 0.7
             })
         });
 
-        if (!response.ok) throw new Error("AI 响应失败");
-
         const data = await response.json();
         const fullText = data.choices[0].message.content;
 
-        // 5. 渲染结果（处理换行和粗体）
+        // 5. 渲染到界面
         storyContent.innerHTML = fullText
-            .replace(/\n/g, '<br>') // 换行符转为 HTML 换行
-            .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e67e22;">$1</strong>'); // 粗体变色
+            .replace(/\n/g, '<br>')
+            .replace(/\*\*(.*?)\*\*/g, '<strong style="color:#e67e22;">$1</strong>');
 
     } catch (error) {
         console.error(error);
@@ -792,35 +726,84 @@ async function generateGroupStory() {
     }
 }
 
-// 联动功能：将生成的 AI 故事发送到“文章跟读”板块
+// 联动：同步到文章板块
 function transferGroupStoryToArticle() {
-    const storyHtml = document.getElementById('groupStoryContent').innerHTML;
-    if (!storyHtml || storyHtml.includes("正在构思")) return;
+    const storyBox = document.getElementById('groupStoryContent');
+    if (!storyBox || storyBox.innerText.includes("正在构思")) return;
 
-    // 解析出英文部分（分割线之前的内容）
-    const parts = document.getElementById('groupStoryContent').innerText.split('---');
-    const englishText = parts[0].trim();
-    const chineseText = parts.length > 1 ? parts[1].trim() : "";
-
-    // 切换到文章板块
+    const parts = storyBox.innerText.split('---');
+    currentArticleText = parts[0].trim();
+    
     switchTab('articles');
-
-    // 注入内容到文章显示区
+    
     const articleDisplay = document.getElementById('articleDisplay');
     articleDisplay.innerHTML = `
         <div style="border-left: 4px solid #8e44ad; padding-left: 10px; background: #fdf6ff;">
-            <p style="color: #8e44ad; font-weight: bold; font-size: 14px;">✨ AI 生成组故事：</p>
-            <p style="font-weight: 500;">${englishText}</p>
-            <p style="color: #7f8c8d; font-size: 14px; margin-top: 10px;">${chineseText}</p>
+            <p style="color: #8e44ad; font-weight: bold;">✨ AI 单词挑战故事：</p>
+            <p>${currentArticleText}</p>
+            <p style="color: #7f8c8d; font-size: 14px;">${parts[1] || ""}</p>
         </div>
     `;
-
-    // 更新全局变量以便进行跟读和听写
-    currentArticleText = englishText;
-    
-    // 重置听写模块
     quitArticleDictation();
-    
-    // 提示用户
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// ================= [补全功能] 1247 手动计算复习计划 =================
+
+function calculateReviewGroups() {
+    const inputVal = document.getElementById('currentGroupInput').value;
+    if (!inputVal) {
+        alert("请输入你今天正在学习的组号（例如：7）");
+        return;
+    }
+    
+    const N = parseInt(inputVal);
+    const reviewOffsets = [1, 3, 6]; // 1-2-4-7 法则的偏移量
+    const resultArea = document.getElementById('reviewResultArea');
+    const linksSpan = document.getElementById('reviewLinks');
+    const aiStoryArea = document.getElementById('aiStoryArea');
+    
+    if (!resultArea || !linksSpan) {
+        console.error("HTML 中缺少复习结果显示区域");
+        return;
+    }
+
+    let reviewGroups = [];
+    reviewOffsets.forEach(offset => {
+        let target = N - offset;
+        if (target >= 1) {
+            reviewGroups.push(target);
+        }
+    });
+
+    if (reviewGroups.length === 0) {
+        linksSpan.innerHTML = "<span style='color:#7f8c8d'>前期积累中，暂无复习任务。</span>";
+    } else {
+        linksSpan.innerHTML = "";
+        // 倒序排列，让最近的组号排在前面
+        reviewGroups.reverse().forEach(gNum => {
+            const link = document.createElement('a');
+            link.href = "#";
+            link.innerText = `第 ${gNum} 组`;
+            // 设置明显的黄色链接样式，呼应看板风格
+            link.style = "color: #f39c12; font-weight: bold; text-decoration: underline; margin-right: 15px; cursor: pointer;";
+            link.onclick = (e) => {
+                e.preventDefault();
+                jumpToGroup(gNum - 1); // 索引从 0 开始
+            };
+            linksSpan.appendChild(link);
+        });
+    }
+
+    // 显示结果区域和 AI 故事生成区域
+    resultArea.style.display = 'block';
+    if (aiStoryArea) aiStoryArea.style.display = 'block';
+    
+    // 自动清理之前的 AI 故事内容，防止混淆
+    const storyContent = document.getElementById('aiStoryContent');
+    if (storyContent) {
+        storyContent.style.display = 'none';
+        storyContent.innerHTML = "";
+    }
+}
+
