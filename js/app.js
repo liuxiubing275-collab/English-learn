@@ -191,20 +191,40 @@ let groupTestCurrentIndex = 0;
 let groupTestBounds = null;
 
 function startGroupTest() {
-    groupTestBounds = getGroupBounds(); groupTestAnswers = []; groupTestCurrentIndex = 0;
+    if (wordList.length === 0) return;
+    
+    // 1. 设置测验范围
+    groupTestBounds = getGroupBounds(); 
+    groupTestAnswers = []; 
+    groupTestCurrentIndex = 0;
+    
+    // 2. UI 切换
     document.getElementById('dictationSingleMode').style.display = 'none';
     document.getElementById('dictationGroupMode').style.display = 'block';
     document.getElementById('dictationResultMode').style.display = 'none';
+    
+    // 3. 【核心修改】：测验模式必须强制模糊单词
+    const wordEl = document.getElementById('targetWord');
+    if (wordEl) {
+        wordEl.style.filter = 'blur(8px)';
+    }
+
+    // 4. 播放第一个单词
     playTestWord();
 }
 
 function playTestWord() {
     const word = wordList[groupTestBounds.start + groupTestCurrentIndex].en;
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(word); u.lang = 'en-US';
+    const u = new SpeechSynthesisUtterance(word); 
+    u.lang = 'en-US';
     window.speechSynthesis.speak(u);
-    document.getElementById('groupTestProgress').innerText = `测验中: ${groupTestCurrentIndex+1} / ${groupTestBounds.total}`;
-    setTimeout(()=>document.getElementById('groupTestInput').focus(), 200);
+    
+    // 确保测验播放时，单词依然是模糊的
+    document.getElementById('targetWord').style.filter = 'blur(8px)';
+    
+    document.getElementById('groupTestProgress').innerText = `测验中: ${groupTestCurrentIndex + 1} / ${groupTestBounds.total}`;
+    setTimeout(() => document.getElementById('groupTestInput').focus(), 200);
 }
 
 function submitTestWord() {
@@ -234,7 +254,12 @@ function quitGroupTest() {
     document.getElementById('dictationGroupMode').style.display = 'none';
     document.getElementById('dictationResultMode').style.display = 'none';
     document.getElementById('dictationSingleMode').style.display = 'block';
-    document.getElementById('targetWord').style.filter = 'none';
+    
+    // 【核心修复】：退出测验模式，强制还原单词清晰度
+    const wordEl = document.getElementById('targetWord');
+    if (wordEl) {
+        wordEl.style.filter = 'none';
+    }
 }
 
 // ================= [5] 1247 看板逻辑 =================
