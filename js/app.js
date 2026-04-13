@@ -1226,70 +1226,85 @@ async function startArticleChallenge() {
 
 async function gradeArticleChallenge() {
     const apiKey = localStorage.getItem('silicon_api_key');
-    if (!apiKey) return alert("请配置 API Key");
+    if (!apiKey) return alert("请在‘互动聊天’版块设置 API Key");
 
     const inputs = document.querySelectorAll('.art-user-input');
-    const btn = document.getElementById('btnSubmitArtChallenge');
-    btn.innerText = "⏳ AI 正在深度比对中...";
-    btn.disabled = true;
-
-    // 收集用户输入并对比原句
-    let promptContent = artChallengeData.map((item, i) => {
-        let userEn = inputs[i].value.trim();
-        return `【原中文】：${item.zh} \n【课文原英文】：${item.en} \n【用户回译】：${userEn}`;
-    }).join('\n\n');
-
-    const prompt = `你是一位严厉的英语老师。请比对用户的“回译”和“课文原英文”。
-    要求：
-    1. 评价用户是否准确复现了课文中的地道表达。
-    2. 如果用户意思对但用词不同，请指出课文原句好在哪里（比如连读、固定搭配）。
-    3. 给出批改分数（0-100）。
+    const feedbackBox = document.getElementById('artChallengeComparison');
     
-    请严格按此格式返回：
-    句1：[分数] 评价建议
-    句2：[分数] 评价建议
-    句3：[分数] 评价建议`;
+    document.getElementById('artChallengeWorking').style.display = 'none';
+    document.getElementById('artChallengeResult').style.display = 'block';
+    feedbackBox.innerHTML = "<p style='text-align:center;'>⏳ AI 老师正在逐字逐句批改中...</p>";
+
+    // 构建非常详细的对照数据
+    let checkContent = artChallengeData.map((item, i) => {
+        return `
+第${i+1}题：
+【中文原意】：${item.zh}
+【课文原句】：${item.en}
+【用户翻译】：${inputs[i].value.trim() || "（未填写）"}
+-----------------------------------`;
+    }).join('\n');
+
+    // 强化 Prompt：要求 AI 必须针对每一句的差异进行分析
+    const prompt = `你是一位极度细心的英语私教。请对比用户的“回译”和“课文原句”。
+要求：
+1. 必须【逐题】分析。
+2. 即使意思对，也要指出用户用词与原句（地道表达）的细微差别（比如连读习惯、介词使用、语气强弱）。
+3. 如果有语法错误，请明确指出。
+4. 格式要求：为了方便程序解析，请你将每道题的点评分别放在 <p1>...</p1>, <p2>...</p2>, <p3>...</p3> 标签中。
+
+每条点评内部包含：[分数] + 具体的错误/差异分析。`;
 
     try {
-        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+        const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 model: 'Qwen/Qwen2.5-7B-Instruct',
-                messages: [{ role: "user", content: prompt + "\n\n" + promptContent }]
+                messages: [{ role: "system", content: "你是一个精准的英语翻译批改助手。" },
+                           { role: "user", content: prompt + "\n" + checkContent }],
+                temperature: 0.3 // 降低随机性，让批改更严谨
             })
         });
         const data = await response.json();
-        const feedback = data.choices[0].message.content;
+        const aiResponse = data.choices[0].message.content;
 
-        // 4. 展示并排结果
-        document.getElementById('artChallengeWorking').style.display = 'none';
-        document.getElementById('artChallengeResult').style.display = 'block';
-        
-        let html = '<h3 style="color:#007AFF; margin-top:0;">📋 课文回译比对报告：</h3>';
-        const feedbackLines = feedback.split('\n').filter(l => l.length > 5);
+        // 使用正则提取标签内容，确保批改不乱序
+        const getFeedback = (tag) => {
+            const match = aiResponse.match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`));
+            return match ? match[1].trim() : "AI 老师开小差了，未生成本句点评。";
+        };
 
+        // 渲染结果界面
+        let html = '<h3 style="color:#007AFF;">📋 AI 深度批改报告：</h3>';
         artChallengeData.forEach((item, i) => {
-            let userEn = inputs[i].value.trim() || "(未填写)";
+            const feedback = getFeedback(`p${i+1}`);
             html += `
-                <div style="margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:10px; background:white;">
-                    <p style="font-size:13px; color:#666; margin:0;">原句：${item.zh}</p>
-                    <div style="display:flex; gap:10px; margin-top:5px;">
-                        <div style="flex:1; color:#e74c3c;"><small>你的回译:</small><br>${userEn}</div>
-                        <div style="flex:1; color:#27ae60;"><small>课文原句:</small><br><b>${item.en}</b></div>
+                <div style="margin-bottom:18px; background:white; padding:15px; border-radius:15px; border:1px solid #E5E5EA; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                    <div style="font-size:12px; color:#8E8E93; margin-bottom:8px;">🎯 挑战题目 ${i+1}</div>
+                    <p style="background:#F2F2F7; padding:10px; border-radius:10px; font-size:14px; margin:0 0 10px 0;"><b>中文：</b>${item.zh}</p>
+                    
+                    <div style="display:flex; gap:12px; margin-bottom:10px;">
+                        <div style="flex:1; padding:8px; background:#FFF5F5; border-radius:8px; border-left:4px solid #FF3B30;">
+                            <small style="color:#FF3B30; font-weight:bold;">你的翻译</small><br>
+                            <span style="color:#C0392B;">${inputs[i].value.trim() || "(未填写)"}</span>
+                        </div>
+                        <div style="flex:1; padding:8px; background:#F0FFF4; border-radius:8px; border-left:4px solid #34C759;">
+                            <small style="color:#34C759; font-weight:bold;">课文原句</small><br>
+                            <span style="color:#1B5E20; font-weight:bold;">${item.en}</span>
+                        </div>
                     </div>
-                    <p style="margin-top:8px; font-size:14px; color:#5856D6; border-top:1px dashed #eee; padding-top:5px;">💡 AI 老师：${feedbackLines[i] || ""}</p>
-                </div>
-            `;
+                    
+                    <div style="background:#F8F9FF; padding:12px; border-radius:10px; font-size:14px; color:#4834D4; line-height:1.6; border:1px solid #D1D8FF;">
+                        <b>💡 AI 老师点评：</b><br>${feedback.replace(/\n/g, '<br>')}
+                    </div>
+                </div>`;
         });
-
-        document.getElementById('artChallengeComparison').innerHTML = html;
-        btn.innerText = "✅ 提交 AI 批改";
-        btn.disabled = false;
+        feedbackBox.innerHTML = html;
 
     } catch (e) {
-        alert("批改失败，请重试");
-        btn.disabled = false;
+        console.error(e);
+        feedbackBox.innerHTML = "<p style='color:red;'>批改请求失败，请检查 API Key 或网络环境。</p>";
     }
 }
 
