@@ -158,6 +158,23 @@ function getGroupBounds() {
 }
 
 function updateWordDisplay() {
+
+    const wordEl = document.getElementById('targetWord');
+    // 增加一个淡入效果
+    wordEl.style.opacity = 0;
+    wordEl.style.transform = "translateY(10px)";
+    
+    setTimeout(() => {
+        // 原有的更新文字逻辑
+        document.getElementById('targetWord').innerText = wordList[currentWordIndex].en;
+        
+        // 执行动画
+        wordEl.style.transition = "all 0.4s ease";
+        wordEl.style.opacity = 1;
+        wordEl.style.transform = "translateY(0)";
+    }, 50);
+    
+
     if (wordList.length === 0) return;
     const bounds = getGroupBounds();
     const currentWord = wordList[currentWordIndex];

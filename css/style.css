@@ -1,107 +1,85 @@
+/* --- 覆盖原有的 CSS --- */
 :root {
-    --primary: #5856D6;      /* 科技蓝 */
-    --primary-light: #706fd3;
-    --success: #27ae60;      /* 森林绿 */
-    --warning: #f39c12;      /* 亮橙 */
-    --bg: #f2f2f7;           /* 苹果灰背景 */
+    --primary: #5856D6;      /* 品牌紫色 */
+    --success: #34C759;      /* 苹果绿 */
+    --warning: #FF9500;      /* 橙色 */
     --card-bg: #ffffff;
-    --text: #1c1c1e;
-    --text-sub: #8e8e93;
+    --app-bg: #F2F2F7;
+    --text-main: #1C1C1E;
+    --text-sub: #8E8E93;
 }
 
-body { 
-    font-family: -apple-system, system-ui, sans-serif; 
-    margin: 0; padding: 15px; 
-    background-color: var(--bg); 
-    color: var(--text); 
-    line-height: 1.5;
-}
+body { background-color: var(--app-bg); color: var(--text-main); }
 
-/* 适配桌面端，限制最大宽度并居中 */
-@media (min-width: 600px) {
-    body { max-width: 500px; margin: 0 auto; }
-}
-
-h1 { text-align: center; font-size: 22px; margin: 15px 0; color: #000; font-weight: 800; }
-
-/* --- 导航栏 --- */
-.nav-bar { 
-    display: flex; background: #e3e3e8; 
-    border-radius: 12px; padding: 3px; margin-bottom: 20px; 
-}
-.nav-btn { 
-    flex: 1; background: transparent; color: var(--text-sub); 
-    border: none; padding: 10px 0; border-radius: 9px; 
-    font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; 
-}
-.nav-btn.active { 
-    background: white; color: var(--primary); 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); 
-}
-
-/* --- 板块控制 (核心修复) --- */
-.page-section { display: none; animation: fadeIn 0.3s ease-out; }
-.page-section.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-/* --- 卡片容器 --- */
-.card { 
-    background: var(--card-bg); padding: 20px; border-radius: 18px; 
-    margin-bottom: 18px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); 
-    border: 1px solid rgba(0,0,0,0.02);
-}
-h2 { font-size: 17px; margin-top: 0; color: #2c3e50; font-weight: 700; }
-
-/* --- 按钮布局 (修复双按钮) --- */
-.row-buttons { 
-    display: flex; gap: 10px; margin-top: 10px; width: 100%; 
-}
-.row-buttons button.action-btn { 
-    flex: 1; margin-top: 0; /* 两个按钮等宽并排 */
-}
-
-/* 单个大按钮 */
-button.action-btn { 
-    background-color: var(--primary); color: white; border: none; 
-    padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; 
-    width: 100%; margin-top: 10px; cursor: pointer; transition: 0.2s; 
-}
-button.action-btn:active { transform: scale(0.97); opacity: 0.9; }
-
-/* --- 表单元素 --- */
-input[type="text"], input[type="password"], textarea, select { 
-    width: 100%; padding: 12px; margin-top: 8px; border-radius: 10px; 
-    border: 1px solid #d1d1d6; box-sizing: border-box; font-size: 15px; 
-    background-color: #f9f9f9; 
-}
-
-/* --- 专项美化 --- */
-#targetWord { 
-    font-size: 40px; color: var(--success); text-align: center; 
-    display: block; margin: 15px 0; letter-spacing: -1px; 
-}
-
+/* 看板美化：更像一个仪表盘 */
 .dashboard {
-    background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%) !important;
-    color: white !important; border-radius: 15px !important; padding: 15px !important;
+    background: linear-gradient(135deg, #1e1e1e 0%, #3a3a3c 100%) !important;
+    padding: 20px !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+    border: none !important;
 }
 
-.example-box { 
-    background-color: #fff9db; border-left: 4px solid var(--warning); 
-    padding: 12px; margin-top: 15px; border-radius: 8px; font-style: italic; 
+#taskList b { color: #FFD60A; } /* 醒目的黄色强调 */
+#taskList a {
+    background: rgba(255,255,255,0.1);
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin: 0 4px;
+    text-decoration: none !important;
 }
 
-.article-display { 
-    background-color: #f8f9fa; padding: 15px; border-radius: 12px; 
-    line-height: 1.6; border: 1px solid #eee; 
+/* “标记完成”按钮美化 (建议把 checkbox 隐藏，用样式做) */
+.finish-btn {
+    background: rgba(52, 199, 89, 0.2) !important;
+    border: 1px solid var(--success) !important;
+    color: var(--success) !important;
+    border-radius: 12px !important;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.finish-btn:active { background: var(--success) !important; color: white !important; }
+
+/* 单词显示区：优雅、聚焦 */
+#targetWord {
+    font-size: 48px !important;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), #AF52DE);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 25px 0 !important;
 }
 
-/* --- 聊天气泡 --- */
-.chat-container { 
-    height: 450px; background: #ebedf0; border-radius: 15px; 
-    overflow: hidden; display: flex; flex-direction: column; 
+/* 按钮矩阵优化：去掉了厚重的颜色，改用轻盈感 */
+.row-buttons button.action-btn {
+    background: white !important;
+    color: var(--text-main) !important;
+    border: 1px solid #D1D1D6 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
-.chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-.chat-bubble { max-width: 80%; padding: 10px 14px; border-radius: 16px; font-size: 15px; }
-.bubble-user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-.bubble-ai { align-self: flex-start; background: white; color: #1c1c1e; border-bottom-left-radius: 2px; }
+
+/* 给特定按钮加一点色调点缀 */
+button[onclick*="readTargetWord"] { border-left: 4px solid var(--success) !important; }
+button[onclick*="startListeningForWord"] { border-left: 4px solid var(--warning) !important; }
+
+/* AI 辅助区域美化 */
+#groupStoryArea, #memoryPalaceArea {
+    border: none !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05) !important;
+}
+
+/* 听写区卡片 */
+.card h2 {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #F2F2F7;
+    padding-bottom: 12px;
+    margin-bottom: 15px;
+}
