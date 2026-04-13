@@ -49,7 +49,6 @@
 
     <div id="page-words" class="page-section active">
         <div class="card" style="border: 2px solid #3498db;">
-            <h2>🗣️ 单词发音与跟读 <span id="wordCounter" style="font-size: 14px; color: #8e8e93; font-weight: normal;">1/1</span></h2>
 
             <!-- 每日科学学习看板 -->
             <div id="dailyTaskDashboard" class="dashboard">
@@ -62,8 +61,6 @@
                 </button>
             </div>
 
-            <select id="groupSelect" onchange="changeGroup()" style="font-weight: bold; color: #2980b9; border: 2px solid #3498db;"><option value="all">📚 整体练习 (加载中...)</option></select>
-
             <div class="review-box">
                 <p style="margin: 0 0 8px 0; font-size: 14px; color: #2c3e50; font-weight: bold;">📅 1247 科学复习法</p>
                 <div style="display: flex; gap: 8px; align-items: center;">
@@ -72,6 +69,12 @@
                     <span style="font-size: 13px;">组</span>
                     <button onclick="calculateReviewGroups()" class="generate-btn">生成复习计划</button>
                 </div>
+
+
+            <h2>🗣️ 单词发音与跟读 <span id="wordCounter" style="font-size: 14px; color: #8e8e93; font-weight: normal;">1/1</span></h2>
+
+            <select id="groupSelect" onchange="changeGroup()" style="font-weight: bold; color: #2980b9; border: 2px solid #3498db;"><option value="all">📚 整体练习 (加载中...)</option></select>
+
                 <div id="reviewResultArea" style="margin-top: 10px; font-size: 13px; color: #7f8c8d; display: none;">
                     <div id="aiStoryArea" style="margin-top: 15px; display: none; border-top: 1px solid #eee; padding-top: 10px;">
                         <button onclick="generateRevisionStory()" id="btnGenStory" class="story-btn">
