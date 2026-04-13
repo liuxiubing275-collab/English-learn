@@ -426,25 +426,69 @@ function jumpToGroup(idx) { document.getElementById('groupSelect').value = idx; 
 // ================= [6] AI 故事与宫殿生成 =================
 async function generateRevisionStory() {
     const apiKey = localStorage.getItem('silicon_api_key');
-    if (!apiKey) return alert("请保存 Key");
-    const bounds = getGroupBounds();
-    let words = []; for(let i=bounds.start; i<=bounds.end; i++) if(wordList[i]) words.push(wordList[i].en);
+    if (!apiKey) return alert("请先在设置中保存 API Key");
+
+    // 1. 自动从历史记录中抓取符合 1,3,6 天规则的所有复习单词
+    let history = JSON.parse(localStorage.getItem('eng_study_history') || '{}');
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    
+    let selectedWords = [];
+    let reviewGroupNums = [];
+
+    for (let gNum in history) {
+        const dateParts = history[gNum].split('-');
+        const studyDate = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+        const diffDays = Math.round((today.getTime() - studyDate.getTime()) / 86400000);
+
+        // 如果符合 1, 4, 7 天后的复习节点
+        if ([1, 3, 6].includes(diffDays)) {
+            reviewGroupNums.push(gNum);
+            let start = (parseInt(gNum) - 1) * 10;
+            let end = Math.min(start + 9, wordList.length - 1);
+            for (let i = start; i <= end; i++) {
+                if(wordList[i]) selectedWords.push(wordList[i].en);
+            }
+        }
+    }
+
+    // 2. 如果今天没有复习任务，则针对当前选中的组生成
+    if (selectedWords.length === 0) {
+        const val = document.getElementById('groupSelect').value;
+        if (val === 'all') return alert("今日暂无复习任务，请先选择一个具体的组进行预习/学习。");
+        
+        let start = parseInt(val) * 10;
+        let end = Math.min(start + 9, wordList.length - 1);
+        for (let i = start; i <= end; i++) {
+            if(wordList[i]) selectedWords.push(wordList[i].en);
+        }
+    }
+
+    // 3. UI 反馈
     const btn = document.getElementById('btnGenStory');
     const box = document.getElementById('aiStoryContent');
-    btn.innerText = "⏳ AI 创作中..."; box.style.display="block"; box.innerText="正在构思故事...";
-    const prompt = `用这些单词写一段励志短文并加粗，末尾附翻译：[${words.join(", ")}]`;
+    btn.innerText = "⏳ AI 正在针对任务编写故事...";
+    box.style.display = "block";
+    box.innerHTML = "正在串联单词: " + selectedWords.slice(0, 5).join(", ") + "...";
+
+    // 4. API 请求 (Prompt 逻辑)
+    const prompt = `你是一位英语私教。请使用以下单词编写一段连贯、地道的英语故事（约150词）。要求单词加粗显示，并在文末附带中文翻译（用 --- 分隔）：[${selectedWords.join(", ")}]`;
+
     try {
-        const res = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: [{role:"user", content:prompt}] })
+            body: JSON.stringify({ model: 'Qwen/Qwen2.5-7B-Instruct', messages: [{role:"user", content: prompt}], temperature: 0.7 })
         });
-        const data = await res.json();
+        const data = await response.json();
         const content = data.choices[0].message.content;
-        box.innerHTML = content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        box.innerHTML = content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<b style="color:#e67e22;">$1</b>');
         document.getElementById('btnShadowStory').style.display = 'block';
-        btn.innerText = "重新生成故事";
-    } catch (e) { box.innerText = "失败"; btn.innerText = "重试"; }
+        btn.innerText = "🪄 重新生成 AI 故事";
+    } catch (e) {
+        box.innerHTML = "❌ 生成失败，请检查 API Key 或网络。";
+        btn.innerText = "🪄 生成今日复习词汇 AI 短文";
+    }
 }
 // ================= 快速提取全组预存记忆宫殿 (唯一保留版本) =================
 function generateGroupMemoryPalace() {
@@ -912,64 +956,6 @@ function transferGroupStoryToArticle() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ================= [补全功能] 1247 手动计算复习计划 =================
-
-function calculateReviewGroups() {
-    const inputVal = document.getElementById('currentGroupInput').value;
-    if (!inputVal) {
-        alert("请输入你今天正在学习的组号（例如：7）");
-        return;
-    }
-    
-    const N = parseInt(inputVal);
-    const reviewOffsets = [1, 3, 6]; // 1-2-4-7 法则的偏移量
-    const resultArea = document.getElementById('reviewResultArea');
-    const linksSpan = document.getElementById('reviewLinks');
-    const aiStoryArea = document.getElementById('aiStoryArea');
-    
-    if (!resultArea || !linksSpan) {
-        console.error("HTML 中缺少复习结果显示区域");
-        return;
-    }
-
-    let reviewGroups = [];
-    reviewOffsets.forEach(offset => {
-        let target = N - offset;
-        if (target >= 1) {
-            reviewGroups.push(target);
-        }
-    });
-
-    if (reviewGroups.length === 0) {
-        linksSpan.innerHTML = "<span style='color:#7f8c8d'>前期积累中，暂无复习任务。</span>";
-    } else {
-        linksSpan.innerHTML = "";
-        // 倒序排列，让最近的组号排在前面
-        reviewGroups.reverse().forEach(gNum => {
-            const link = document.createElement('a');
-            link.href = "#";
-            link.innerText = `第 ${gNum} 组`;
-            // 设置明显的黄色链接样式，呼应看板风格
-            link.style = "color: #f39c12; font-weight: bold; text-decoration: underline; margin-right: 15px; cursor: pointer;";
-            link.onclick = (e) => {
-                e.preventDefault();
-                jumpToGroup(gNum - 1); // 索引从 0 开始
-            };
-            linksSpan.appendChild(link);
-        });
-    }
-
-    // 显示结果区域和 AI 故事生成区域
-    resultArea.style.display = 'block';
-    if (aiStoryArea) aiStoryArea.style.display = 'block';
-    
-    // 自动清理之前的 AI 故事内容，防止混淆
-    const storyContent = document.getElementById('aiStoryContent');
-    if (storyContent) {
-        storyContent.style.display = 'none';
-        storyContent.innerHTML = "";
-    }
-}
 
 // ======================================================
 // ================= 每日翻译挑战逻辑系统 =================

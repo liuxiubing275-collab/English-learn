@@ -57,22 +57,22 @@
                     📅 今日学习计划 <span id="todayDate" style="font-size: 12px; opacity: 0.8;"></span>
                 </h3>
                 <div id="taskList" style="font-size: 14px; line-height: 1.8;">正在计算进度...</div>
+
+    <div id="aiStoryArea" style="margin-top: 15px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px;">
+        <button onclick="generateRevisionStory()" id="btnGenStory" class="story-btn" style="background: rgba(255,255,255,0.2); border: 1px solid white; color: white; width: 100%; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer;">
+            🪄 生成今日复习词汇 AI 短文
+        </button>
+        <div id="aiStoryContent" class="story-content" style="display:none; background: white; color: #333; margin-top:10px; padding:10px; border-radius:8px;"></div>
+        <button id="btnShadowStory" onclick="transferStoryToArticle()" class="sync-btn" style="display:none; width: 100%; margin-top:10px; background: #27ae60; color: white; border: none; padding: 10px; border-radius: 10px;">📖 同步到“文章跟读”精练</button>
+    </div>
+
                 <button onclick="markCurrentGroupFinished()" class="finish-btn">
                     ✅ 标记当前组（第 <span id="currentActiveGNum">-</span> 组）为今日已完成
                 </button>
             </div>
 
             <select id="groupSelect" onchange="changeGroup()" style="font-weight: bold; color: #2980b9; border: 2px solid #3498db;"><option value="all">📚 整体练习 (加载中...)</option></select>
-                <div id="reviewResultArea" style="margin-top: 10px; font-size: 13px; color: #7f8c8d; display: none;">
-                    <div id="aiStoryArea" style="margin-top: 15px; display: none; border-top: 1px solid #eee; padding-top: 10px;">
-                        <button onclick="generateRevisionStory()" id="btnGenStory" class="story-btn">
-                            🪄 用复习词汇生成 AI 励志短文
-                        </button>
-                        <div id="aiStoryContent" class="story-content"></div>
-                        <button id="btnShadowStory" onclick="transferStoryToArticle()" class="sync-btn">📖 同步到“文章跟读”精练</button>
-                    </div>
-                    需复习：<span id="reviewLinks"></span>
-                </div>
+
             
             <!-- 单词主体 -->
             <div style="text-align: center; width: 100%; margin-top: 20px;">
