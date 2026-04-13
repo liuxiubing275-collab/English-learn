@@ -1176,3 +1176,124 @@ function resetTranslationSection() {
     document.getElementById('transResult').style.display = 'none';
     document.getElementById('transSetup').style.display = 'block';
 }
+
+// ================= 文章回译挑战逻辑 =================
+let artChallengeData = []; // 存储抽取的题目
+
+async function startArticleChallenge() {
+    if (articleList.length === 0) return alert("文章尚未加载");
+
+    // 1. 确定抽取范围：从第 0 段到当前结束下拉框选中的段落
+    const endIdx = parseInt(document.getElementById('articleEndSelect').value);
+    const pool = articleList.slice(0, endIdx + 1);
+
+    if (pool.length < 3) {
+        alert("已学段落不足 3 段，请先多学几段再来挑战！");
+        return;
+    }
+
+    // 2. 随机抽取 3 个不连续的索引
+    let selectedIndices = [];
+    while (selectedIndices.length < 3) {
+        let r = Math.floor(Math.random() * pool.length);
+        // 确保不重复且不连续（索引差大于1）
+        let isConsecutive = selectedIndices.some(idx => Math.abs(idx - r) <= 1);
+        if (!selectedIndices.includes(r) && !isConsecutive) {
+            selectedIndices.push(r);
+        }
+        // 如果池子太小无法满足“不连续”，则只保证不重复
+        if (pool.length <= 5 && !selectedIndices.includes(r)) {
+            selectedIndices.push(r);
+        }
+    }
+
+    artChallengeData = selectedIndices.map(i => pool[i]);
+
+    // 3. UI 切换
+    document.getElementById('artChallengeSetup').style.display = 'none';
+    document.getElementById('artChallengeWorking').style.display = 'block';
+    document.getElementById('artChallengeResult').style.display = 'none';
+
+    const qBox = document.getElementById('artChallengeQuestions');
+    qBox.innerHTML = artChallengeData.map((item, i) => `
+        <div style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;">
+            <p style="font-weight:bold; color:#2c3e50;">句 ${i+1} (来自原课文):</p>
+            <p style="background:#fffbe6; padding:10px; border-radius:8px;">${item.zh}</p>
+            <textarea class="art-user-input" data-idx="${i}" placeholder="尝试默写出对应的原英文句子..." rows="2" style="margin-top:10px;"></textarea>
+        </div>
+    `).join('');
+}
+
+async function gradeArticleChallenge() {
+    const apiKey = localStorage.getItem('silicon_api_key');
+    if (!apiKey) return alert("请配置 API Key");
+
+    const inputs = document.querySelectorAll('.art-user-input');
+    const btn = document.getElementById('btnSubmitArtChallenge');
+    btn.innerText = "⏳ AI 正在深度比对中...";
+    btn.disabled = true;
+
+    // 收集用户输入并对比原句
+    let promptContent = artChallengeData.map((item, i) => {
+        let userEn = inputs[i].value.trim();
+        return `【原中文】：${item.zh} \n【课文原英文】：${item.en} \n【用户回译】：${userEn}`;
+    }).join('\n\n');
+
+    const prompt = `你是一位严厉的英语老师。请比对用户的“回译”和“课文原英文”。
+    要求：
+    1. 评价用户是否准确复现了课文中的地道表达。
+    2. 如果用户意思对但用词不同，请指出课文原句好在哪里（比如连读、固定搭配）。
+    3. 给出批改分数（0-100）。
+    
+    请严格按此格式返回：
+    句1：[分数] 评价建议
+    句2：[分数] 评价建议
+    句3：[分数] 评价建议`;
+
+    try {
+        const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model: 'Qwen/Qwen2.5-7B-Instruct',
+                messages: [{ role: "user", content: prompt + "\n\n" + promptContent }]
+            })
+        });
+        const data = await response.json();
+        const feedback = data.choices[0].message.content;
+
+        // 4. 展示并排结果
+        document.getElementById('artChallengeWorking').style.display = 'none';
+        document.getElementById('artChallengeResult').style.display = 'block';
+        
+        let html = '<h3 style="color:#007AFF; margin-top:0;">📋 课文回译比对报告：</h3>';
+        const feedbackLines = feedback.split('\n').filter(l => l.length > 5);
+
+        artChallengeData.forEach((item, i) => {
+            let userEn = inputs[i].value.trim() || "(未填写)";
+            html += `
+                <div style="margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:10px; background:white;">
+                    <p style="font-size:13px; color:#666; margin:0;">原句：${item.zh}</p>
+                    <div style="display:flex; gap:10px; margin-top:5px;">
+                        <div style="flex:1; color:#e74c3c;"><small>你的回译:</small><br>${userEn}</div>
+                        <div style="flex:1; color:#27ae60;"><small>课文原句:</small><br><b>${item.en}</b></div>
+                    </div>
+                    <p style="margin-top:8px; font-size:14px; color:#5856D6; border-top:1px dashed #eee; padding-top:5px;">💡 AI 老师：${feedbackLines[i] || ""}</p>
+                </div>
+            `;
+        });
+
+        document.getElementById('artChallengeComparison').innerHTML = html;
+        btn.innerText = "✅ 提交 AI 批改";
+        btn.disabled = false;
+
+    } catch (e) {
+        alert("批改失败，请重试");
+        btn.disabled = false;
+    }
+}
+
+function resetArtChallenge() {
+    document.getElementById('artChallengeSetup').style.display = 'block';
+    document.getElementById('artChallengeResult').style.display = 'none';
+}

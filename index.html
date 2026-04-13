@@ -318,6 +318,25 @@
             </div>
         </div>
 
+<!-- ================= 文章精通挑战 (新增) ================= -->
+<div class="card" style="border: 2px solid #007AFF;">
+    <h2>🎯 文章精通挑战 (课文回译)</h2>
+    <div id="artChallengeSetup">
+        <button class="action-btn" onclick="startArticleChallenge()" style="background-color: #007AFF;">🔥 抽取已学课文挑战</button>
+        <p style="font-size: 12px; color: #7f8c8d; text-align: center; margin-top: 5px;">范围：第 1 段至当前选段</p>
+    </div>
+
+    <div id="artChallengeWorking" style="display: none;">
+        <div id="artChallengeQuestions"></div>
+        <button class="action-btn" id="btnSubmitArtChallenge" onclick="gradeArticleChallenge()" style="background-color: #27ae60; margin-top: 15px;">✅ 提交 AI 批改</button>
+    </div>
+
+    <div id="artChallengeResult" style="display: none; margin-top: 15px;">
+        <div id="artChallengeComparison" style="background: #f0f7ff; padding: 15px; border-radius: 12px;"></div>
+        <button class="action-btn btn-secondary" onclick="resetArtChallenge()" style="margin-top:10px;">🔙 返回</button>
+    </div>
+</div>
+
         <!-- 翻译挑战区 -->
         <div class="card" style="border: 2px solid var(--success);">
             <h2>🏆 每日 3 句翻译挑战</h2>
