@@ -554,6 +554,20 @@ function generateGroupMemoryPalace() {
     }
 }
 
+// 关闭记忆宫殿显示区域，并让页面回滚到单词练习区
+function closeMemoryPalace() {
+    const palaceArea = document.getElementById('memoryPalaceArea');
+    if (palaceArea) {
+        palaceArea.style.display = 'none';
+        
+        // 【优化体验】：自动滚动回单词练习的核心区域，方便直接开始“盲听拼写”
+        const wordDisplay = document.getElementById('page-words');
+        if (wordDisplay) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+}
+
 function transferStoryToArticle() {
     const text = document.getElementById('aiStoryContent').innerText;
     const parts = text.split('---');
